@@ -1,3 +1,4 @@
+using Azulyoro.Infrastructure.ApiFootball;
 using Azulyoro.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +12,8 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        services.AddApiFootballClient(configuration);
+
         var connectionString = configuration.GetConnectionString("Postgres")
             ?? throw new InvalidOperationException(
                 "Connection string 'Postgres' is not configured. Set it via user-secrets (dev) or EnvironmentFile (prod).");

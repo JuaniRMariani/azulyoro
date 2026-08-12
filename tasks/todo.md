@@ -90,7 +90,7 @@
   - DoD: proyecto Domain compila.
   - Deps: F0-11
 
-- [ ] **F1-2 · EF config + migración Initial**
+- [x] **F1-2 · EF config + migración Initial**
   - Qué: mapeo EF + schema en Postgres.
   - Pasos: `IEntityTypeConfiguration` por entidad; PK **uuid v7**; unique index en `ext_id` (upsert); índices `(date_utc)`,`(status)`,`(is_boca,date_utc)`, uniques de `docs/04`; `dotnet ef migrations add Initial`.
   - DoD: `dotnet ef database update` crea todas las tablas + índices.

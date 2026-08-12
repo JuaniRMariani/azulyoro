@@ -4,4 +4,7 @@
     <Project Path="src/Azulyoro.Domain/Azulyoro.Domain.csproj" />
     <Project Path="src/Azulyoro.Infrastructure/Azulyoro.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Azulyoro.UnitTests/Azulyoro.UnitTests.csproj" />
+  </Folder>
 </Solution>
