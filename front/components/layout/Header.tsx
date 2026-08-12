@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { Wordmark } from "@/components/ui/Wordmark";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { LocaleSwitcher } from "@/components/ui/LocaleSwitcher";
 
 const NAV = [
@@ -18,7 +18,7 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[color-mix(in_oklab,var(--background)_90%,transparent)] backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center gap-6 px-4 py-3">
         <Link href="/" className="text-xl" aria-label="Azul y Oro">
-          <Wordmark />
+          <BrandMark />
         </Link>
 
         <nav className="hidden items-center gap-5 text-sm font-medium md:flex">
