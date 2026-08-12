@@ -156,56 +156,56 @@
   - DoD: fetch de `/api/squad` renderiza en una página de prueba.
   - Deps: F1-9, F0-11
 
-- [ ] **F2-2 · Componentes UI deportivos**
+- [x] **F2-2 · Componentes UI deportivos**
   - Qué: piezas reutilizables de `docs/05`/`docs/11`.
   - Pasos: `MatchCard`, `LiveScoreBadge` (pill roja `--live`, pulso, respeta `prefers-reduced-motion`), `FixtureList`, `StandingsTable` (Boca resaltado, `tabular-nums`), `PlayerCard`, `PlayerStatsTable`, `Breadcrumbs` (con schema).
   - DoD: página demo renderiza todos con datos reales.
   - Deps: F2-1
 
-- [ ] **F2-3 · Home (ISR)**
+- [x] **F2-3 · Home (ISR)**
   - Qué: portada.
   - Pasos: próximo partido + últimos resultados + últimas noticias (placeholder hasta Fase 3); `revalidate` corto; hero LCP con `priority`.
   - DoD: render con datos reales, sin CLS visible.
   - Deps: F2-2
 
-- [ ] **F2-4 · Partidos hub + fixture/calendario (SSG+ISR)**
+- [x] **F2-4 · Partidos hub + fixture/calendario (SSG+ISR)**
   - Pasos: `/partidos` (`/en/matches`) con calendario + próximos; `/partidos/fixture` por competición/temporada.
   - DoD: render, navegable, hreflang par es/en.
   - Deps: F2-2
 
-- [ ] **F2-5 · Resultados (histórico)**
+- [x] **F2-5 · Resultados (histórico)**
   - Pasos: `/partidos/resultados` (`/en/matches/results`) agrupado por fecha/competición.
   - DoD: render con resultados reales.
   - Deps: F2-2
 
-- [ ] **F2-6 · Detalle partido (ISR→SSR live)**
+- [x] **F2-6 · Detalle partido (ISR→SSR live)**
   - Qué: página estrella del módulo.
   - Pasos: `/partido/{slug}` (`/en/match/{slug}`), **slug SEO sin UUID** (ID resuelto server-side); si live → `dynamic='force-dynamic'` + Suspense (shell/SEO instantáneo, score streamea) + polling/SSE; secciones eventos, formaciones, stats; al FT pasa a ISR.
   - DoD: slug resuelve · sin UUID en URL · live actualiza in-page.
   - Deps: F2-2
 
-- [ ] **F2-7 · En vivo (SSR streaming)**
+- [x] **F2-7 · En vivo (SSR streaming)**
   - Pasos: `/en-vivo` (`/en/live`); si hay partido live redirige a su detalle; si no, próximo + estado.
   - DoD: render y redirección correctos.
   - Deps: F2-6
 
-- [ ] **F2-8 · Plantel + fichas jugador (SSG+ISR)**
+- [x] **F2-8 · Plantel + fichas jugador (SSG+ISR)**
   - Pasos: `/plantel` (`/en/squad`) grid por posición; `/jugadores/{slug}` (`/en/players/{slug}`) bio + stats temporada/partido; `generateStaticParams`; slug sin UUID.
   - DoD: grid y ficha renderizan con datos reales.
   - Deps: F2-2
 
-- [ ] **F2-9 · Posiciones (ISR)**
+- [x] **F2-9 · Posiciones (ISR)**
   - Pasos: `/posiciones` (`/en/standings`) con `StandingsTable`, fila Boca resaltada.
   - DoD: tabla real, revalidate 1h en días de partido.
   - Deps: F2-2
 
-- [ ] **F2-10 · SEO técnico**
+- [x] **F2-10 · SEO técnico**
   - Qué: fundaciones de posicionamiento (de `docs/10`).
   - Pasos: JSON-LD `SportsEvent` (partido), `SportsTeam` (club/plantel), `BreadcrumbList` (global) como server component; `sitemap.ts` dinámico segmentado desde DB con alternates por locale; `robots.ts` (Disallow `/api/ /_next/ /admin/ /*?*utm_*`); hreflang `es-AR`/`en`/`x-default` completo (sin parcial) vía `alternates.languages`; `generateMetadata` por locale (title/desc/OG + canonical); canonical en filtros/paginado; `metadataBase`.
   - DoD: Rich Results Test válido · `/sitemap.xml` y `/robots.txt` responden · hreflang bidireccional.
   - Deps: F2-3..F2-9
 
-- [ ] **F2-11 · Verificación Fase 2**
+- [x] **F2-11 · Verificación Fase 2**
   - DoD: `pnpm build` verde · Lighthouse SEO alto · hreflang sin errores. Commit `feat(front-sports): sports pages + seo`.
   - Deps: F2-1..F2-10
 
@@ -355,4 +355,7 @@
 - 2026-08-12 (iter B — planificación): contexto 100% leído. Prerrequisitos verificados (.NET 10.0.201, dotnet-ef, Node 22.19, pnpm 10.33, Postgres 17.9, git 2.51). **Backlog granular y detallado de 58 tareas (6 fases) generado** en este archivo; 57 tareas de build (F0-2…F5-5) espejadas en la task list del harness (F0-1 = decisión, sólo acá). Sin implementar — a la espera de indicación del usuario para arrancar.
 - 2026-08-12 (iter C — **Fase 0 COMPLETA y verificada**): F0-2…F0-11 implementadas y probadas. Back .NET 10 VSA (`.slnx`, Api+Domain+Infrastructure), paquetes stack, `AppDbContext` (schema `app`) + Npgsql + migración `InitialCreate` aplicada a Postgres `azulyoro`, API `/health` 200. Front Next 16 + Tailwind v4 + next-intl v4 (`[locale]` es/en, `proxy.ts`, pathnames localizados, LocaleSwitcher), design system azul/oro OKLCH + fuentes Space Grotesk/Manrope + wordmark/monograma "AyO" (sin escudo) + dark mode, shell Header+Footer con disclaimer no oficial exacto (es/en) y atribución API-Football. Secrets vía user-secrets + `.env.example`. **Verificado:** back build, `ef database update` idempotente, API `/health` 200, front `pnpm build`, `/es` y `/en` 200, `/`→307 `/es`, disclaimer visible ambos locales. F0-1 (3 decisiones) diferida: se avanza con defaults documentados; se confirmarán antes de Fase 3/4 (no bloquean 0–2).
 - 2026-08-12 (iter D — **Fase 1 parcial: tareas sin API key COMPLETAS y verificadas**): F1-1 (entidades Domain + enums), F1-2 (EF configs snake_case + migración `Initial` consolidada, 12 tablas + índices `date_utc`/`status`/`(is_boca,date_utc)` + uniques verificados en Postgres), F1-3 (cliente API-Football typed + resiliencia retry/circuit-breaker Retry-After, 2 unit tests verdes), F1-7 (LiveSyncService + BackgroundService + test mock: marcador/eventos actualizan y **corta en FT**), F1-8 (Hangfire Postgres schema `hangfire`, dashboard admin-guarded, jobs `sync-static`/`sync-semi` registrados y **ejecutan** → `sync_state`), F1-9 (12 endpoints VSA leídos desde Postgres, verificados con dev-seeder: competitions/squad/matches/next(200)/live(204)/detail/events/lineups/player-stats/players/standings; fix standings filtros opcionales), F1-10 (CORS allow-list+credentials, antiforgery, rate-limiter 429, ForwardedHeaders — preflight y 429 verificados). Dev-seeder idempotente para verificar sin key. **3 unit tests verdes, solución build verde.**
-  - **DIFERIDAS (bloqueadas por API-Football key real):** F1-4 (seed + verificación de IDs contra API), F1-5 (sync estático teams/plantel), F1-6 (sync semi standings/fixtures), F1-11 (verificación final con datos reales). El cliente, la lógica de upsert live y los jobs ya están; falta la key para poblar datos reales y cerrar sus DoD. **Próximo: cargar API key → F1-4/5/6/11, o arrancar Fase 2 (front deportivo) contra el dev-seeder.**
+  - **DIFERIDAS (bloqueadas por API-Football key real):** F1-4 (seed + verificación de IDs contra API), F1-5 (sync estático teams/plantel), F1-6 (sync semi standings/fixtures), F1-11 (verificación final con datos reales). El cliente, la lógica de upsert live y los jobs ya están; falta la key para poblar datos reales y cerrar sus DoD.
+- 2026-08-12 (iter E — **Fase 2 COMPLETA y verificada**): F2-1…F2-11. Capa de datos `lib/api` (client con cache tags + cookie-forward opt-in, tipos espejo del contrato, `lib/api/sports.ts`), estados base (QueryState/Skeleton/EmptyState). Componentes deportivos (MatchCard clicable, LiveScoreBadge pulso reduced-motion, FixtureList, StandingsTable Boca resaltado tabular-nums, PlayerCard, PlayerStatsTable, Breadcrumbs+JSON-LD). Páginas: home ISR (próximo+resultados+JSON-LD SportsTeam), partidos+fixture, resultados, plantel+ficha jugador (slug sin UUID, generateStaticParams), posiciones, detalle partido (`/partido/[slug]`↔`/en/match/[slug]`, slug SEO sin UUID, JSON-LD SportsEvent, auto-refresh live vía `router.refresh()`), en-vivo (redirige a detalle si hay live). SEO: `sitemap.ts` dinámico con hreflang es-AR/en/x-default + slugs jugadores/partidos, `robots.ts`, metadataBase+title template. **Fix de mi parte:** `classifyStatus` centralizado (el subagente usaba códigos cortos; la API devuelve nombres de enum). **Verificado runtime:** todas las páginas 200, localización bidireccional (`/en/matches`,`/en/squad`,`/en/match/...`), `/en/en-vivo`→307 `/en/live`, sitemap con hreflang y URLs localizadas, robots OK, plantel renderiza jugadores reales. Delegué F2-2..F2-9 y F1-9 a subagentes con review/fix propio. **Nota:** Lighthouse no corrido (requiere browser tooling); primitivas SEO verificadas por inspección.
+- 2026-08-12 (ajustes del usuario): paleta a **navy más oscuro + oro más anaranjado** (tokens `globals.css`, `icon.svg`/`logo.svg`). Escudo del club: el usuario decidió usarlo (asume responsabilidad legal) — se dejó `BrandMark` que lee `public/brand/logo.svg` (monograma propio default); NO se descarga el asset con copyright (lo carga el usuario). Disclaimer no oficial se mantiene. Detalle en `lessons.md`.
+  - **Próximo:** cargar API key → F1-4/5/6/11 (datos reales), o Fase 3 (noticias + CMS moderación).
