@@ -157,7 +157,7 @@ if [[ ! -f "$release/.complete" ]]; then
     cp -a front/.next/static "$release/front/.next/static"
     cp -a front/public "$release/front/public"
 
-    systemctl stop "$build_unit.service"
+    systemctl stop "$build_unit.service" 2>/dev/null || true
 
     chown -R root:root "$release"
     find "$release" -type d -exec chmod 755 {} +
