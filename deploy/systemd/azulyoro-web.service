@@ -16,7 +16,7 @@ Group=azulyoro
 
 EnvironmentFile=/etc/azulyoro/web.env
 Environment=NODE_ENV=production
-Environment=PORT=3000
+Environment=PORT=3102
 Environment=HOSTNAME=127.0.0.1
 Environment=NODE_OPTIONS=--max-old-space-size=2048
 

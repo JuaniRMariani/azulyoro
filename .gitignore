@@ -45,5 +45,5 @@ coverage/
 
 # Production release artifacts are outside Git history but live below the
 # checkout on the VPS.
-/current/
+/current
 /releases/

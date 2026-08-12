@@ -203,7 +203,7 @@ curl --fail --silent --show-error --max-time 10 -H 'Host: api.azulyoro.com.ar' h
     rollback
     die "API health check failed; previous release restored"
 }
-curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3000/ >/dev/null || {
+curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3102/ >/dev/null || {
     rollback
     die "web health check failed; previous release restored"
 }

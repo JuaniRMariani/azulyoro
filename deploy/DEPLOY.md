@@ -1,6 +1,6 @@
 # Deploy de Azul y Oro en VPS compartido
 
-Topología: Cloudflare proxied → Nginx → Next.js en `127.0.0.1:3000` y API
+Topología: Cloudflare proxied → Nginx → Next.js en `127.0.0.1:3102` y API
 .NET en `127.0.0.1:5000` → PostgreSQL local.
 
 Este VPS aloja otros proyectos de producción. Los artefactos de Azul y Oro
