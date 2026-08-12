@@ -65,13 +65,21 @@ cd "$repo_root"
 [[ -z "$(git status --porcelain)" ]] || die "checkout has local changes; refusing to overwrite production files"
 
 git fetch --prune origin main
-target_sha="$(git rev-parse origin/main)"
-[[ -z "$expected_sha" || "$expected_sha" == "$target_sha" ]] ||
-    die "requested SHA $expected_sha is not origin/main ($target_sha)"
-
-if [[ "$(git rev-parse HEAD)" != "$target_sha" ]]; then
-    git pull --ff-only origin main
+remote_sha="$(git rev-parse origin/main)"
+if [[ -n "$expected_sha" ]]; then
+    target_sha="$expected_sha"
+    [[ "$expected_sha" == "$remote_sha" ]] ||
+        die "requested SHA $expected_sha is not origin/main ($remote_sha)"
+else
+    # Manual deployments use the exact clean checkout currently prepared on
+    # the VPS. CI deployments pass the GitHub SHA explicitly and validate it
+    # against origin/main above.
+    target_sha="$(git rev-parse HEAD)"
 fi
+
+git cat-file -e "$target_sha^{commit}" || die "commit $target_sha is not available locally"
+[[ "$(git rev-parse HEAD)" == "$target_sha" ]] ||
+    die "checkout HEAD does not match requested commit $target_sha"
 
 [[ -z "$(git status --porcelain)" ]] || die "checkout became dirty after update"
 
