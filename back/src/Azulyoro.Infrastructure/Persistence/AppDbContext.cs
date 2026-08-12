@@ -25,6 +25,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Standing> Standings => Set<Standing>();
     public DbSet<SyncState> SyncStates => Set<SyncState>();
 
+    public DbSet<Source> Sources => Set<Source>();
+    public DbSet<StagingArticle> StagingArticles => Set<StagingArticle>();
+    public DbSet<Article> Articles => Set<Article>();
+    public DbSet<ArticleTranslation> ArticleTranslations => Set<ArticleTranslation>();
+    public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<ArticleTag> ArticleTags => Set<ArticleTag>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(Schema);

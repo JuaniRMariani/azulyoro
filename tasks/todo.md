@@ -344,10 +344,15 @@
 ## Decisiones (defaults acordados + pendientes)
 **Acordadas (prompt):** Analytics = **Plausible** (cookieless) · ads fuera de v1 · PK = **uuid v7** · rutas **slug SEO sin UUID** · API-Football **free tier** dev (Pro lo gestiona el usuario) · Entradas = **POST-MVP** (link-out oficial).
 
-**Pendientes (bloquean fases indicadas, NO bloquean Fase 0–2):**
-1. **(a) Whitelist noticias** — bloquea F3-3. _Default:_ La Número 12, La Nación Fútbol, Infobae Deportes, Doble Amarilla, Olé Boca, ESPN Deportes (`docs/09`).
-2. **(b) Responsable legal** (nombre/entidad + `legal@`/`privacidad@` + jurisdicción) — bloquea F4-8. _Default:_ Xenova + `legal@azulyoro.com.ar` / `privacidad@azulyoro.com.ar`, CABA.
-3. **(c) Edad mínima de registro** — bloquea F4-1/F4-8. _Default:_ 16 años.
+**ADOPTADAS por defecto (2026-08-12, instrucción del usuario "seguí hasta terminar" → se toman los defaults; el usuario puede revisarlas luego):**
+1. **(a) Whitelist noticias** = La Número 12, La Nación Fútbol, Infobae Deportes, Doble Amarilla, Olé Boca, ESPN Deportes (`docs/09`). VERIFIED activas; INFERRED inactivas hasta verificar server.
+2. **(b) Responsable legal** = **Xenova**, contacto `legal@azulyoro.com.ar` / `privacidad@azulyoro.com.ar`, jurisdicción **CABA**.
+3. **(c) Edad mínima de registro** = **16 años**.
+
+**BLOQUEOS DUROS (no dependen del agente):**
+- **API-Football key** → F1-4/5/6/11 (datos reales) quedan pendientes hasta que el usuario cargue la key.
+- **Envío real de email (Brevo key)** → se construye la integración; el envío real se valida cuando haya key.
+- **Acceso al VPS** → Fase 5 se prepara (configs Nginx/systemd + docs); el deploy real lo ejecuta el usuario.
 
 ## Review / bitácora
 - 2026-08-12: documentación base (docs 00–11 + borradores legales).
