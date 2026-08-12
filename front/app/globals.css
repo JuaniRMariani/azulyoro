@@ -38,28 +38,30 @@
 
 @layer base {
   :root {
-    /* Brand palette */
-    --azul-900: oklch(0.28 0.09 250);
-    --azul-700: oklch(0.42 0.12 248);
-    --azul-500: oklch(0.55 0.13 246);
-    --oro-600: oklch(0.72 0.13 82);
-    --oro-500: oklch(0.8 0.13 85);
-    --oro-400: oklch(0.86 0.11 88);
+    /* Brand palette — deep navy blue + warm orange-gold (last-season kit vibe,
+       gold-forward). Hues ~258 (navy) and ~78 (amber-gold). */
+    --azul-900: oklch(0.2 0.1 259);
+    --azul-700: oklch(0.32 0.13 257);
+    --azul-500: oklch(0.46 0.14 255);
+    --oro-700: oklch(0.62 0.14 74);
+    --oro-600: oklch(0.72 0.15 77);
+    --oro-500: oklch(0.82 0.16 80);
+    --oro-400: oklch(0.88 0.13 83);
 
     /* Semantic — light */
-    --background: oklch(0.99 0.005 250);
-    --foreground: oklch(0.2 0.02 250);
+    --background: oklch(0.99 0.006 255);
+    --foreground: oklch(0.19 0.03 258);
     --card: oklch(1 0 0);
     --primary: var(--azul-700);
-    --primary-foreground: oklch(0.99 0.005 250);
-    /* Gold on light backgrounds uses --oro-600 for WCAG AA text contrast. */
-    --accent: var(--oro-600);
-    --accent-foreground: oklch(0.2 0.02 250);
-    --muted: oklch(0.95 0.01 250);
-    --muted-foreground: oklch(0.45 0.02 250);
-    --border: oklch(0.9 0.01 250);
+    --primary-foreground: oklch(0.99 0.006 255);
+    /* Gold as text/links on light backgrounds uses --oro-700 for WCAG AA. */
+    --accent: var(--oro-700);
+    --accent-foreground: oklch(0.19 0.03 258);
+    --muted: oklch(0.95 0.012 255);
+    --muted-foreground: oklch(0.45 0.025 258);
+    --border: oklch(0.9 0.014 255);
     --success: oklch(0.65 0.15 150);
-    --warning: oklch(0.8 0.14 80);
+    --warning: oklch(0.8 0.15 80);
     --danger: oklch(0.58 0.19 27);
     --info: var(--azul-500);
     --live: oklch(0.62 0.2 27);
