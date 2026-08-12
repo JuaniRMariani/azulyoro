@@ -117,19 +117,34 @@ Primer deploy, ejecutado manualmente después de completar los env files:
 sudo /usr/local/sbin/azulyoro-deploy
 ```
 
-El workflow `.github/workflows/deploy.yml` se activa en cada push a `main`.
-Crear en GitHub estos secrets:
+El autodeploy corre dentro del VPS, igual que los otros servicios que usan
+este servidor. Consulta `origin/main` cada dos minutos, sólo acepta avances
+fast-forward y se niega a desplegar si el checkout tiene cambios locales.
+El deploy existente mantiene el lock, las migraciones, el health check y el
+rollback atómico.
 
-- `AZULYORO_DEPLOY_HOST`
-- `AZULYORO_DEPLOY_USER` (una cuenta SSH con `sudo -n` sólo para el deploy; no
-  usar una clave privada dentro del repositorio)
-- `AZULYORO_DEPLOY_SSH_KEY`
-- `AZULYORO_DEPLOY_KNOWN_HOSTS` (generado previamente con `ssh-keyscan` y
-  revisado fuera del runner)
+Instalarlo una sola vez:
 
-El runner sólo solicita `sudo -n /usr/local/sbin/azulyoro-deploy <sha>`. La
-configuración de secretos de aplicación permanece en `/etc/azulyoro` y no se
-transmite por GitHub.
+```bash
+sudo install -o root -g root -m 0750 deploy/scripts/azulyoro-autodeploy.sh \
+  /usr/local/sbin/azulyoro-autodeploy
+sudo install -o root -g root -m 0644 deploy/systemd/azulyoro-autodeploy.service \
+  /etc/systemd/system/azulyoro-autodeploy.service
+sudo install -o root -g root -m 0644 deploy/systemd/azulyoro-autodeploy.timer \
+  /etc/systemd/system/azulyoro-autodeploy.timer
+sudo systemctl daemon-reload
+sudo systemctl enable --now azulyoro-autodeploy.timer
+```
+
+No se necesitan secrets SSH de GitHub: el servidor usa el acceso de lectura
+del checkout para consultar el repositorio y ejecuta localmente el deploy
+privilegiado. El workflow queda sólo como referencia manual y no realiza el
+deploy directamente. Revisar actividad con:
+
+```bash
+sudo systemctl status azulyoro-autodeploy.timer --no-pager
+sudo journalctl -u azulyoro-autodeploy.service -n 100 --no-pager
+```
 
 ## 5. Nginx, Cloudflare y TLS
 

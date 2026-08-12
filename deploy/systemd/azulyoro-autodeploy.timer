@@ -1,0 +1,11 @@
+[Unit]
+Description=Poll Azul y Oro main for production deployments
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+Persistent=true
+Unit=azulyoro-autodeploy.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,8 @@
+[Unit]
+Description=Azul y Oro automatic production deployment
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/azulyoro-autodeploy
