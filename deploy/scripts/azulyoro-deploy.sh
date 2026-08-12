@@ -46,6 +46,9 @@ for item in \
     "${api_env}:AllowedHosts" \
     "${api_env}:ApiFootball__Key" \
     "${api_env}:ApiFootball__BaseUrl" \
+    "${api_env}:SportsSync__TeamExtId" \
+    "${api_env}:SportsSync__PrimaryLeagueExtId" \
+    "${api_env}:SportsSync__Season" \
     "${api_env}:Brevo__ApiKey" \
     "${api_env}:Brevo__FromEmail" \
     "${api_env}:Frontend__BaseUrl" \

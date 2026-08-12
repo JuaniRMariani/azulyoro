@@ -1,29 +1,55 @@
 using Azulyoro.Domain.Entities;
 using Azulyoro.Infrastructure.Persistence;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 
 namespace Azulyoro.Api.Features.Admin;
 
 /// <summary>
-/// Recurring ingestion jobs orchestrated by Hangfire. The heavy sync logic
-/// (teams/squads/fixtures/standings) is filled in once the API-Football key is
-/// available (F1-5/F1-6); for now each job records its run in sync_state so the
-/// schedule is observable in the dashboard.
+/// Recurring ingestion jobs orchestrated by Hangfire. Each job records its
+/// result in sync_state so failures are visible without treating an API error
+/// as a successful run.
 /// </summary>
-public class SyncJobs(AppDbContext db, ILogger<SyncJobs> logger)
+public class SyncJobs(
+    AppDbContext db,
+    Azulyoro.Infrastructure.Sync.ISportsSyncService sports,
+    ILogger<SyncJobs> logger)
 {
     public const string StaticJobId = "sync-static";
     public const string SemiJobId = "sync-semi";
 
+    [DisableConcurrentExecution(600)]
     public Task SyncStaticAsync(CancellationToken ct) =>
-        MarkRunAsync("static:teams+squad", ct);
+        RunAsync("static:teams+squad", sports.SyncStaticAsync, ct);
 
+    [DisableConcurrentExecution(600)]
     public Task SyncSemiAsync(CancellationToken ct) =>
-        MarkRunAsync("semi:standings+fixtures", ct);
+        RunAsync("semi:standings+fixtures", sports.SyncSemiAsync, ct);
 
-    private async Task MarkRunAsync(string resource, CancellationToken ct)
+    private async Task RunAsync(
+        string resource,
+        Func<CancellationToken, Task> work,
+        CancellationToken ct)
     {
-        var now = DateTime.UtcNow;
+        try
+        {
+            await work(ct);
+            await MarkStateAsync(resource, null, ct);
+            logger.LogInformation("Sync job '{Resource}' completed successfully.", resource);
+        }
+        catch (Exception ex)
+        {
+            await MarkStateAsync(resource, ex.Message, CancellationToken.None);
+            logger.LogError(ex, "Sync job '{Resource}' failed.", resource);
+            throw;
+        }
+    }
+
+    private async Task MarkStateAsync(
+        string resource,
+        string? error,
+        CancellationToken ct)
+    {
         var state = await db.SyncStates.FirstOrDefaultAsync(s => s.Resource == resource, ct);
         if (state is null)
         {
@@ -31,13 +57,15 @@ public class SyncJobs(AppDbContext db, ILogger<SyncJobs> logger)
             db.SyncStates.Add(state);
         }
 
-        state.LastRunAt = now;
-        state.LastOkAt = now;
-        state.LastError = null;
-        await db.SaveChangesAsync(ct);
+        state.LastRunAt = DateTime.UtcNow;
+        state.LastError = string.IsNullOrWhiteSpace(error)
+            ? null
+            : error.Length > 2000 ? error[..2000] : error;
+        if (state.LastError is null)
+        {
+            state.LastOkAt = state.LastRunAt;
+        }
 
-        logger.LogInformation(
-            "Sync job '{Resource}' ran at {Now:o}. Full ingestion pending API-Football key.",
-            resource, now);
+        await db.SaveChangesAsync(ct);
     }
 }

@@ -30,6 +30,9 @@ public static class DependencyInjection
                 .UseSnakeCaseNamingConvention());
 
         services.AddScoped<LiveSyncService>();
+        services.Configure<SportsSyncOptions>(
+            configuration.GetSection(SportsSyncOptions.SectionName));
+        services.AddScoped<ISportsSyncService, SportsSyncService>();
         services.AddHostedService<LiveSyncBackgroundService>();
 
         return services;

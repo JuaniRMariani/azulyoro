@@ -35,6 +35,8 @@ public class ApiFootballClient(HttpClient http, ILogger<ApiFootballClient> logge
         {
             logger.LogWarning("API-Football '{Endpoint}' returned errors: {Errors}",
                 endpoint, payload.ErrorText);
+            throw new InvalidOperationException(
+                $"API-Football '{endpoint}' returned errors: {payload.ErrorText}");
         }
 
         return payload;
