@@ -1,4 +1,11 @@
+using Azulyoro.Api.Configuration;
+using Azulyoro.Api.Features.Competitions;
+using Azulyoro.Api.Features.Matches;
+using Azulyoro.Api.Features.Players;
+using Azulyoro.Api.Features.Standings;
 using Azulyoro.Infrastructure;
+using Azulyoro.Infrastructure.Persistence;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,18 +13,49 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApiHardening(builder.Configuration);
+builder.Services.AddAppHangfire(builder.Configuration);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseApiHardening();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+
+    // Seed representative sports data so the API is verifiable without the
+    // external API-Football key.
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DevDataSeeder.SeedAsync(db, CancellationToken.None);
 }
 
 app.UseHttpsRedirection();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }))
     .WithName("HealthCheck");
+
+app.MapMatchesEndpoints();
+app.MapPlayersEndpoints();
+app.MapStandingsEndpoints();
+app.MapCompetitionsEndpoints();
+
+app.UseAppHangfire();
+
+// Dev-only endpoints: exercise the sensitive rate-limit policy and let us
+// enqueue a sync job through Hangfire to confirm the pipeline executes.
+if (app.Environment.IsDevelopment())
+{
+    app.MapPost("/api/dev/rate-test", () => Results.Ok())
+        .RequireRateLimiting(ApiHardening.SensitivePolicy);
+
+    app.MapPost("/api/dev/run-sync", (Hangfire.IBackgroundJobClient jobs) =>
+    {
+        jobs.Enqueue<Azulyoro.Api.Features.Admin.SyncJobs>(
+            j => j.SyncStaticAsync(CancellationToken.None));
+        return Results.Accepted();
+    });
+}
 
 app.Run();

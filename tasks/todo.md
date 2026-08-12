@@ -96,7 +96,7 @@
   - DoD: `dotnet ef database update` crea todas las tablas + índices.
   - Deps: F1-1
 
-- [ ] **F1-3 · Cliente API-Football (typed + Polly)**
+- [x] **F1-3 · Cliente API-Football (typed + Polly)**
   - Qué: cliente HTTP resiliente hacia `v3.football.api-sports.io`.
   - Pasos: typed client vía `IHttpClientFactory`; header `x-apisports-key`; Polly retry + circuit-breaker en 429/5xx respetando `Retry-After`; leer y loguear `x-ratelimit-requests-remaining` / `X-RateLimit-Remaining`; DTOs de respuesta.
   - DoD: unit test con `HttpMessageHandler` mock (retry en 429, parseo de payload).
@@ -126,19 +126,19 @@
   - DoD: test con fixture live simulado (mock) → eventos/marcador se actualizan y corta en FT.
   - Deps: F1-6
 
-- [ ] **F1-8 · Hangfire + dashboard + sync_state**
+- [x] **F1-8 · Hangfire + dashboard + sync_state**
   - Qué: orquestación y visibilidad de jobs.
   - Pasos: Hangfire sobre Postgres (`Hangfire.PostgreSql`, schema `hangfire`); `RecurringJob` estático (diario) y semi (30–60m); dashboard `/hangfire` **admin-guarded** (auth filter, nunca público); actualizar `sync_state` (last_run/last_ok/last_error).
   - DoD: dashboard requiere rol Admin · jobs recurrentes registrados y ejecutan.
   - Deps: F1-5, F1-6
 
-- [ ] **F1-9 · Endpoints API deportivos (VSA)**
+- [x] **F1-9 · Endpoints API deportivos (VSA)**
   - Qué: API pública servida desde DB.
   - Pasos: slice por endpoint (ErrorOr + ProblemDetails, camelCase, envelope `{items,page,pageSize,total}`): `GET /api/matches` (status/competition/from/to/paginado), `/matches/next`, `/matches/live` (204 si none), `/matches/{id}`, `/matches/{id}/{events,lineups,player-stats}`, `/squad`, `/players/{id}`, `/players/{id}/stats?season=`, `/standings`, `/competitions`; `Cache-Control` alineado a sync.
   - DoD: cada endpoint devuelve JSON correcto desde Postgres (probado con datos sync).
   - Deps: F1-5, F1-6
 
-- [ ] **F1-10 · Config transversal (CORS/CSRF/rate-limit)**
+- [x] **F1-10 · Config transversal (CORS/CSRF/rate-limit)**
   - Qué: base de seguridad para consumo del front.
   - Pasos: CORS allow-list (`https://azulyoro.com.ar` + `http://localhost:3000` dev) + `AllowCredentials`; antiforgery configurado; rate-limiter en POST públicos (prep para register/login/subscribe); `ForwardedHeaders`.
   - DoD: preflight CORS OK con credentials · rate-limit responde 429 en umbral.
