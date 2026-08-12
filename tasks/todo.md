@@ -70,13 +70,13 @@
   - DoD: layout render en es/en · disclaimer no oficial visible en todas las páginas.
   - Deps: F0-8
 
-- [ ] **F0-10 · Secrets dev + .env.example**
+- [x] **F0-10 · Secrets dev + .env.example**
   - Qué: gestión de secrets sin commitearlos.
   - Pasos: `dotnet user-secrets` (ApiFootball:Key, ConnectionStrings:Postgres, Brevo:ApiKey, Frontend:RevalidateSecret); front `.env.local` (`NEXT_PUBLIC_API_URL`, `REVALIDATE_SECRET`); `.env.example` commiteado con placeholders.
   - DoD: builds toman config · `git status` no muestra secrets reales.
   - Deps: F0-5, F0-6
 
-- [ ] **F0-11 · Verificación Fase 0 (DoD `docs/07`)**
+- [x] **F0-11 · Verificación Fase 0 (DoD `docs/07`)**
   - Qué: gate de cierre de fase.
   - Pasos: correr `dotnet build` + `dotnet ef database update` + `pnpm build`; abrir `/es` y `/en`; confirmar footer disclaimer.
   - DoD: back build verde · schema aplica · front build verde · `/es` y `/en` OK · disclaimer visible. Commit `chore(scaffold): phase 0 baseline`.
@@ -353,3 +353,4 @@
 - 2026-08-12: documentación base (docs 00–11 + borradores legales).
 - 2026-08-12 (iter A): docs 05–11 + borradores + README. Rutas con slugs SEO sin UUID.
 - 2026-08-12 (iter B — planificación): contexto 100% leído. Prerrequisitos verificados (.NET 10.0.201, dotnet-ef, Node 22.19, pnpm 10.33, Postgres 17.9, git 2.51). **Backlog granular y detallado de 58 tareas (6 fases) generado** en este archivo; 57 tareas de build (F0-2…F5-5) espejadas en la task list del harness (F0-1 = decisión, sólo acá). Sin implementar — a la espera de indicación del usuario para arrancar.
+- 2026-08-12 (iter C — **Fase 0 COMPLETA y verificada**): F0-2…F0-11 implementadas y probadas. Back .NET 10 VSA (`.slnx`, Api+Domain+Infrastructure), paquetes stack, `AppDbContext` (schema `app`) + Npgsql + migración `InitialCreate` aplicada a Postgres `azulyoro`, API `/health` 200. Front Next 16 + Tailwind v4 + next-intl v4 (`[locale]` es/en, `proxy.ts`, pathnames localizados, LocaleSwitcher), design system azul/oro OKLCH + fuentes Space Grotesk/Manrope + wordmark/monograma "AyO" (sin escudo) + dark mode, shell Header+Footer con disclaimer no oficial exacto (es/en) y atribución API-Football. Secrets vía user-secrets + `.env.example`. **Verificado:** back build, `ef database update` idempotente, API `/health` 200, front `pnpm build`, `/es` y `/en` 200, `/`→307 `/es`, disclaimer visible ambos locales. F0-1 (3 decisiones) diferida: se avanza con defaults documentados; se confirmarán antes de Fase 3/4 (no bloquean 0–2). **Próximo: Fase 1 (deportivo back + sync).**
