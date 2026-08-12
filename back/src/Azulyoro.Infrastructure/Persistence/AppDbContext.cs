@@ -1,14 +1,18 @@
 using Azulyoro.Domain.Common;
 using Azulyoro.Domain.Entities;
+using Azulyoro.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Azulyoro.Infrastructure.Persistence;
 
 /// <summary>
-/// Root EF Core context. Application tables live under the "app" schema;
-/// Hangfire manages its own "hangfire" schema separately.
+/// Root EF Core context (ASP.NET Identity + app data). Application tables live
+/// under the "app" schema; Hangfire manages its own "hangfire" schema.
 /// </summary>
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options)
+    : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>(options)
 {
     public const string Schema = "app";
 
@@ -32,8 +36,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<ArticleTag> ArticleTags => Set<ArticleTag>();
 
+    public DbSet<NewsletterSubscriber> NewsletterSubscribers => Set<NewsletterSubscriber>();
+    public DbSet<LegalPage> LegalPages => Set<LegalPage>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Identity model must be configured first.
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.HasDefaultSchema(Schema);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
@@ -47,8 +57,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                     .ValueGeneratedNever();
             }
         }
-
-        base.OnModelCreating(modelBuilder);
     }
 
     public override int SaveChanges()

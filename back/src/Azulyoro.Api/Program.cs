@@ -16,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddAppIdentity();
 builder.Services.AddApiHardening(builder.Configuration);
 builder.Services.AddAppHangfire(builder.Configuration);
 
@@ -33,6 +34,7 @@ if (app.Environment.IsDevelopment())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await DevDataSeeder.SeedAsync(db, CancellationToken.None);
     await ContentSeeder.SeedSourcesAsync(db, CancellationToken.None);
+    await IdentitySetup.SeedRolesAsync(scope.ServiceProvider);
 }
 
 app.UseHttpsRedirection();

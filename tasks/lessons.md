@@ -21,6 +21,10 @@
 - **Pathnames localizados**: definidos en `i18n/routing.ts` `pathnames{}`. La KEY es el pathname interno (= carpeta en `app/[locale]/`). Ej: carpeta `app/[locale]/partidos/` sirve `/es/partidos` y `/en/matches`.
 - **Root layout passthrough**: `app/layout.tsx` devuelve `children`; el `<html lang>` real vive en `app/[locale]/layout.tsx`.
 
+## Notas back (Identity)
+- **AddSignInManager() en el classlib/migración rompe el host build**: `SignInManager` requiere `IAuthenticationSchemeProvider` (cookie auth). Si se registra antes de `AddAuthentication`, `dotnet ef` falla al validar el service provider. Registrar Identity core (UserManager/roles/tokens) en F4-1; agregar SignInManager + cookie auth juntos en F4-3.
+- **Tablas Identity quedan PascalCase** (`AspNetUsers`…) con columnas snake_case: `UseSnakeCaseNamingConvention()` no reescribe los `ToTable` explícitos de `IdentityDbContext.OnModelCreating`. Funcional (EF mapea consistente); esquema mixto aceptado pre-deploy. Si molesta, agregar `ToTable("asp_net_users")` etc. tras `base.OnModelCreating` (requiere migración de rename).
+
 ## Correcciones del usuario
 - **Paleta (2026-08-12):** usar azul MÁS OSCURO (navy tipo camiseta temporada pasada) + oro más anaranjado pero amarillo, oro-forward. Tokens en `globals.css` (azul hue ~257, oro hue ~78-80). Monograma `icon.svg`/`logo.svg` navy `#152a63` + oro `#f4b322`.
 - **Escudo del club (2026-08-12) — OVERRIDE de la regla "sin escudo":** el usuario decidió usar el escudo real del club (sin estrellas), asumiendo la responsabilidad legal, con disclaimer "no oficial" siempre visible. **Matiz legal aclarado al usuario:** "asociación civil" ≠ marca de dominio público; el escudo es marca registrada (INPI) y el disclaimer reduce confusión pero NO es licencia. **Límite mantenido:** NO descargo/redistribuyo el asset con copyright; el usuario coloca el archivo manualmente en `public/brand/logo.svg` (monograma propio como default). El `BrandMark` renderiza ese archivo. Disclaimer no oficial se mantiene en el Footer.
