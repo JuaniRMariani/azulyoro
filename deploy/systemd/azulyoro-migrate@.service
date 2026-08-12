@@ -13,6 +13,7 @@ Environment=ASPNETCORE_URLS=http://127.0.0.1:5001
 Environment=Database__MigrateOnly=true
 User=azulyoro
 Group=azulyoro
+UMask=0077
 TimeoutStartSec=300
 
 PrivateTmp=true

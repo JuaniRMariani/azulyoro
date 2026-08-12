@@ -1,3 +1,4 @@
+using System.Security.Cryptography.X509Certificates;
 using Azulyoro.Api.Configuration;
 using Azulyoro.Api.Features.Admin;
 using Azulyoro.Api.Features.Articles;
@@ -16,6 +17,25 @@ using Hangfire;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var dataProtection = builder.Services
+    .AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(
+        builder.Configuration["DataProtection:KeysPath"] ?? "/var/lib/azulyoro/keys"));
+
+if (builder.Environment.IsProduction())
+{
+    var certificatePath = builder.Configuration["DataProtection:CertificatePath"];
+    var certificateKeyPath = builder.Configuration["DataProtection:CertificateKeyPath"];
+    if (string.IsNullOrWhiteSpace(certificatePath) || string.IsNullOrWhiteSpace(certificateKeyPath))
+    {
+        throw new InvalidOperationException(
+            "DataProtection certificate and private-key paths are required in Production.");
+    }
+
+    var certificate = X509Certificate2.CreateFromPemFile(certificatePath, certificateKeyPath);
+    dataProtection.ProtectKeysWithCertificate(certificate);
+}
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

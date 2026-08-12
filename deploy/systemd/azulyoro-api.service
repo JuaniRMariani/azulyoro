@@ -14,6 +14,7 @@ KillSignal=SIGINT
 TimeoutStopSec=30
 User=azulyoro
 Group=azulyoro
+UMask=0077
 
 EnvironmentFile=/etc/azulyoro/api.env
 Environment=ASPNETCORE_ENVIRONMENT=Production

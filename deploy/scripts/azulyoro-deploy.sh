@@ -52,6 +52,9 @@ for item in \
     "${api_env}:Frontend__RevalidateSecret" \
     "${api_env}:Auth__CookieDomain" \
     "${api_env}:Cors__Origins__0" \
+    "${api_env}:DataProtection__KeysPath" \
+    "${api_env}:DataProtection__CertificatePath" \
+    "${api_env}:DataProtection__CertificateKeyPath" \
     "${web_env}:NEXT_PUBLIC_API_URL" \
     "${web_env}:NEXT_PUBLIC_SITE_URL" \
     "${web_env}:REVALIDATE_SECRET" \
