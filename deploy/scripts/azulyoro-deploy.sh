@@ -137,7 +137,7 @@ if [[ ! -f "$release/.complete" ]]; then
         /usr/bin/dotnet "$release/api/Azulyoro.Api.dll"
 
     for attempt in {1..60}; do
-        if curl --fail --silent --max-time 2 http://127.0.0.1:5000/health >/dev/null; then
+        if curl --fail --silent --max-time 2 -H 'Host: api.azulyoro.com.ar' http://127.0.0.1:5000/health >/dev/null; then
             break
         fi
         if [[ "$attempt" == 60 ]]; then
@@ -199,7 +199,7 @@ if ! systemctl restart --wait azulyoro-web.service; then
     die "web failed to start; previous release restored"
 fi
 
-curl --fail --silent --show-error --max-time 10 http://127.0.0.1:5000/health >/dev/null || {
+curl --fail --silent --show-error --max-time 10 -H 'Host: api.azulyoro.com.ar' http://127.0.0.1:5000/health >/dev/null || {
     rollback
     die "API health check failed; previous release restored"
 }
