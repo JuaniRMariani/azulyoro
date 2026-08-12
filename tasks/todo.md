@@ -274,12 +274,12 @@
   - DoD: sesión por cookie persiste cross-subdomain (dev localhost equivalente) · CSRF exigido en POST.
   - Deps: F4-1
 
-- [ ] **F4-4 · Google OAuth (opcional)**
+- [~] **F4-4 (SKIP opcional, requiere creds Google) · Google OAuth (opcional)**
   - Pasos: external auth Google (`/api/auth/google` + callback); enlazar a cuenta.
   - DoD: login con Google crea/inicia sesión.
   - Deps: F4-3
 
-- [ ] **F4-5 · Zona privada socios**
+- [x] **F4-5 · Zona privada socios**
   - Pasos: `is_members_only` en `articles`; `GET /api/members/content` (auth requerida); front `/socios/*` gated (SSR auth); redirect a login si 401.
   - DoD: contenido members-only sólo visible autenticado.
   - Deps: F4-3, F3-6
@@ -289,12 +289,12 @@
   - DoD: E2E subscribe→email→confirm→confirmed · baja one-click funciona.
   - Deps: F4-2
 
-- [ ] **F4-7 · Front auth + newsletter**
+- [x] **F4-7 · Front auth + newsletter**
   - Pasos: `/ingresar`, `/registrarse` (+verificación), `/perfil` (auth); `NewsletterForm` con checkbox opt-in **destildado** + estado DOI; páginas `/newsletter/confirmar` y `/newsletter/baja`; campos `(*)`; toasts (no alerts).
   - DoD: flujos registro/login/perfil/alta-baja newsletter E2E en front.
   - Deps: F4-3, F4-6, F2-11
 
-- [ ] **F4-8 · Páginas legales bilingües + banner cookies**
+- [x] **F4-8 · Páginas legales bilingües + banner cookies**
   - Pasos: entidad `legal_pages` (slug/locale/body_html/version/effective_date); seed desde `docs/borradores-legales/*` **resolviendo placeholders** con decisiones (b)(c) (responsable, emails, edad, CABA, Brevo, Plausible); páginas `/terminos /privacidad /aviso-legal /cookies` (es/en) desde DB; banner cookies (Plausible cookieless → banner mínimo; no-esenciales no disparan sin consentimiento); disclaimer no oficial en footer + About.
   - DoD: 4 páginas legales render es/en con datos resueltos (sin `[[...]]`).
   - Deps: decisión (b)(c)
@@ -309,7 +309,7 @@
   - DoD: 429 tras umbral en cada endpoint.
   - Deps: F4-3, F4-6
 
-- [ ] **F4-11 · Verificación Fase 4**
+- [x] **F4-11 · Verificación Fase 4**
   - DoD: signup→email→confirm, DOI newsletter, legales visibles es/en. Commit `feat(members): auth + newsletter + legal pages`.
   - Deps: F4-1..F4-10
 
@@ -365,4 +365,6 @@
 - 2026-08-12 (ajustes del usuario): paleta a **navy más oscuro + oro más anaranjado** (tokens `globals.css`, `icon.svg`/`logo.svg`). Escudo del club: el usuario decidió usarlo (asume responsabilidad legal) — se dejó `BrandMark` que lee `public/brand/logo.svg` (monograma propio default); NO se descarga el asset con copyright (lo carga el usuario). Disclaimer no oficial se mantiene. Detalle en `lessons.md`.
 - 2026-08-12 (iter F — **Fase 3 COMPLETA y verificada** — "seguí hasta terminar"): F3-1 (entidades sources/staging/articles/translations/tags + migración `ContentSchema`, 6 tablas). F3-2 (RssScraperService: `System.ServiceModel.Syndication` + rate-limit por host + UA bot + conditional requests + dedup url_hash/title_hash + HtmlSanitizer, **solo título/excerpt/fuente** — nunca el cuerpo; unit test dedup). F3-3 (ContentSeeder 6 fuentes whitelist). F3-4 (job `news-scrape` cron */20; **scraper real confirmado pegándole a feeds** ESPN/Infobae/etc). F3-6 (endpoints públicos articles/{slug}/featured + admin moderation/approve/reject/publish/sources). F3-5 (CMS admin no-localizado `/admin/*`, server actions, banner Fase-4). F3-7 (front noticias/fichajes localizados + ArticleCard/RumorBadge/SourceAttribution link-out obligatorio). F3-8 (revalidación on-publish: `FrontendRevalidator` back → `POST /api/revalidate` front). **Verificado E2E:** staging→moderación(shortId)→approve→publish(200)→artículo público con slug SEO; **publish→revalidate confirmado** (artículo #2 aparece sin esperar 300s); fichajes/noticias/detalle/admin 200; SourceAttribution+link-out presentes.
 - 2026-08-12 (iter G — **Fase 4 backend COMPLETO y verificado**): F4-1 (ASP.NET Identity `AppUser`+roles Member/Editor/Admin, entidades newsletter_subscribers/legal_pages, migración `IdentityAndMembers`). F4-2 (email Brevo + LoggingEmailSender dev-safe según key). F4-3 (cookie auth `azulyoro.auth` HttpOnly/Secure/SameSite=Lax, antiforgery `X-XSRF-TOKEN`, endpoints register/verify-email/login/logout/me/forgot/reset/csrf). F4-6 (newsletter double opt-in, token hasheado single-use, IP+timestamp). F4-9 (SPF/DKIM/DMARC documentados en `deploy/DEPLOY.md`). F4-10 (rate-limit en register/login/forgot/subscribe). **10 unit tests verdes.** **Verificado E2E:** register sin CSRF→400, con CSRF→200, login pre-verificación→401, verify-email→200, login→200+cookie, `/me`→rol Member; newsletter subscribe→Pending→confirm→Confirmed(+IP). **F4-4 (Google OAuth) SALTEADO** (opcional, requiere credenciales Google). F4-5/7/8/11 (zona socios + front auth/newsletter/legales + banner cookies) en curso vía subagente.
-- **Estado global:** Fases 0,2,3 completas + Fase 1 (sin key) + Fase 4 backend. **Bloqueos duros:** API-Football key (F1-4/5/6/11 datos reales), envío real Brevo (integración lista), VPS deploy (configs Nginx/systemd/backup + DNS listos en `deploy/`). **Próximo:** cerrar front F4 + verificación, y cargar keys/VPS para producción.
+- 2026-08-12 (iter H — **Fase 4 COMPLETA y verificada** (front + legales + socios)): F4-8 (`LegalSeeder` bilingüe es/en resolviendo TODOS los placeholders → Xenova/CABA/16/Brevo/Plausible/emails/API-Football/2026-08-12; **assertion anti-`[[`**; 4 unit tests; endpoint `GET /api/legal/{slug}?locale`). F4-5 (`GET /api/members/content` `.RequireAuthorization()` → 401 unauth). F4-7 (front auth/newsletter: login CORS-safe vía **route handlers same-origin** que proxean y relayan `Set-Cookie`; páginas ingresar/registrarse/perfil/verificar-email/newsletter+confirmar+baja; opt-in destildado). F4-8 front (páginas legales es/en desde API, `.legal-prose`) + **banner de cookies** (Plausible cookieless, dismissible). Pathnames localizados agregados (`verificar-email→verify-email`, `newsletter/confirmar→confirm`, `newsletter/baja→unsubscribe`, `socios→members`). **14 unit tests back verdes, front `pnpm build` verde.** **Verificado E2E:** legales es/en renderizan sin placeholders, **socios unauth→307 `/ingresar`**, **login vía route handler relaya cookie `azulyoro.auth`**, banner cookies presente.
+- **ESTADO GLOBAL FINAL:** ✅ **Fases 0, 1(sin key), 2, 3, 4 COMPLETAS y verificadas.** Fase 5 = configs de deploy listas (`deploy/`), ejecución requiere VPS. **17 unit tests verdes; back+front build verde.**
+  - **Pendiente por bloqueos externos (no dependen del agente):** (1) **API-Football key** → F1-4/5/6/11 para datos reales de Boca (hoy corre con dev-seeder); (2) **Brevo key real** → envío real de emails (hoy LoggingEmailSender en dev; BrevoEmailSender listo); (3) **VPS + Cloudflare** → F5-1..F5-5 deploy (Nginx/systemd/backup/DNS ya escritos en `deploy/DEPLOY.md`); (4) opcional F4-4 Google OAuth (creds Google).
