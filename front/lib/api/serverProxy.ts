@@ -10,7 +10,6 @@ import { NextResponse } from "next/server";
 
 const API_URL =
   process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
-const API_INTERNAL_HOST = process.env.API_INTERNAL_HOST;
 const IS_DEV = process.env.NODE_ENV !== "production";
 
 /** Serialize the incoming request cookies so the API sees the session. */
@@ -28,10 +27,7 @@ async function getCsrf(incomingCookies: string): Promise<{
   setCookie: string | null;
 }> {
   const res = await fetch(`${API_URL}/api/auth/csrf`, {
-    headers: {
-      ...(API_INTERNAL_HOST ? { host: API_INTERNAL_HOST } : {}),
-      ...(incomingCookies ? { cookie: incomingCookies } : {}),
-    },
+    headers: incomingCookies ? { cookie: incomingCookies } : {},
     cache: "no-store",
   });
   const setCookie = res.headers.get("set-cookie");
@@ -82,7 +78,6 @@ export async function proxyPostWithCsrf(
   const res = await fetch(`${API_URL}${path}`, {
     method: "POST",
     headers: {
-      ...(API_INTERNAL_HOST ? { host: API_INTERNAL_HOST } : {}),
       "content-type": "application/json",
       "X-XSRF-TOKEN": token,
       ...(combinedCookie ? { cookie: combinedCookie } : {}),
@@ -106,7 +101,6 @@ export async function proxyPost(path: string, body: unknown): Promise<NextRespon
   const res = await fetch(`${API_URL}${path}`, {
     method: "POST",
     headers: {
-      ...(API_INTERNAL_HOST ? { host: API_INTERNAL_HOST } : {}),
       "content-type": "application/json",
       ...(incoming ? { cookie: incoming } : {}),
     },
@@ -126,10 +120,7 @@ export async function proxyPost(path: string, body: unknown): Promise<NextRespon
 export async function proxyGet(path: string): Promise<NextResponse> {
   const incoming = await cookieHeader();
   const res = await fetch(`${API_URL}${path}`, {
-    headers: {
-      ...(API_INTERNAL_HOST ? { host: API_INTERNAL_HOST } : {}),
-      ...(incoming ? { cookie: incoming } : {}),
-    },
+    headers: incoming ? { cookie: incoming } : {},
     cache: "no-store",
   });
   const text = await res.text();

@@ -5,7 +5,6 @@ import "server-only";
 // continue to use NEXT_PUBLIC_API_URL in the client-specific modules.
 const API_URL =
   process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
-const API_INTERNAL_HOST = process.env.API_INTERNAL_HOST;
 
 export class ApiError extends Error {
   constructor(
@@ -31,9 +30,7 @@ export interface ApiGetOptions {
 }
 
 async function doFetch(path: string, options: ApiGetOptions): Promise<Response> {
-  const headers: Record<string, string> = API_INTERNAL_HOST
-    ? { host: API_INTERNAL_HOST }
-    : {};
+  const headers: Record<string, string> = {};
 
   if (options.auth) {
     // Lazily import to avoid pulling request-scoped APIs into static renders.

@@ -4,7 +4,6 @@ import type { ArticleListItemDto } from "./types";
 
 const API_URL =
   process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
-const API_INTERNAL_HOST = process.env.API_INTERNAL_HOST;
 
 export interface MeDto {
   email: string;
@@ -22,10 +21,7 @@ async function authGetOrNull<T>(path: string): Promise<T | null> {
   const store = await cookies();
   const cookie = store.toString();
   const res = await fetch(`${API_URL}${path}`, {
-    headers: {
-      ...(API_INTERNAL_HOST ? { host: API_INTERNAL_HOST } : {}),
-      ...(cookie ? { cookie } : {}),
-    },
+    headers: cookie ? { cookie } : {},
     cache: "no-store",
   });
   if (res.status === 401 || res.status === 403 || res.status === 404 || res.status === 204) {

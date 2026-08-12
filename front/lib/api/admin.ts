@@ -4,7 +4,6 @@ import type { ModerationItemDto, UpdateArticleInput } from "./types";
 
 const API_URL =
   process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
-const API_INTERNAL_HOST = process.env.API_INTERNAL_HOST;
 
 class AdminApiError extends Error {
   constructor(
@@ -24,9 +23,7 @@ async function request<T>(
 ): Promise<T> {
   const store = await cookies();
   const incomingCookie = store.toString();
-  const headers: Record<string, string> = API_INTERNAL_HOST
-    ? { host: API_INTERNAL_HOST }
-    : {};
+  const headers: Record<string, string> = {};
 
   if (body !== undefined) {
     headers["content-type"] = "application/json";
@@ -35,10 +32,7 @@ async function request<T>(
     // antiforgery token as defense in depth in addition to Next's action
     // origin checks.
     const csrf = await fetch(`${API_URL}/api/auth/csrf`, {
-      headers: {
-        ...(API_INTERNAL_HOST ? { host: API_INTERNAL_HOST } : {}),
-        ...(incomingCookie ? { cookie: incomingCookie } : {}),
-      },
+      headers: incomingCookie ? { cookie: incomingCookie } : {},
       cache: "no-store",
     });
     const csrfBody = (await csrf.json().catch(() => ({}))) as { token?: string };
