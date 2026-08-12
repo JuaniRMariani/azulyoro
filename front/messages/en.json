@@ -9,6 +9,8 @@
     "latestResultsEmpty": "No results yet.",
     "news": "News",
     "newsPlaceholder": "The latest news and analysis will show up here soon.",
+    "heroKicker": "Unofficial fan site",
+    "heroCtaSquad": "View squad",
     "viewAllMatches": "View all matches",
     "viewStandings": "View standings",
     "metaTitle": "Azul y Oro — Boca matches, squad and standings",
@@ -64,7 +66,14 @@
     "events": "Events",
     "eventsEmpty": "No events recorded.",
     "lineups": "Lineups",
-    "playerStats": "Player stats"
+    "playerStats": "Player stats",
+    "notStartedTitle": "The match hasn't started yet",
+    "notStartedDescription": "Events, lineups and stats will show up here once it kicks off.",
+    "player": "Player",
+    "minutesShort": "Min",
+    "goalsShort": "G",
+    "assistsShort": "A",
+    "ratingShort": "Rating"
   },
   "Live": {
     "title": "Live",

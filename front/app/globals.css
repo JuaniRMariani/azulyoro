@@ -74,37 +74,44 @@
   .dark,
   :root:not(.light) {
     @media (prefers-color-scheme: dark) {
-      --background: oklch(0.18 0.03 250);
-      --foreground: oklch(0.95 0.01 250);
-      --card: oklch(0.22 0.03 250);
+      --background: oklch(0.16 0.045 262);
+      --foreground: oklch(0.95 0.012 258);
+      --card: oklch(0.21 0.05 260);
       --primary: var(--azul-500);
-      --primary-foreground: oklch(0.15 0.02 250);
+      --primary-foreground: oklch(0.14 0.03 260);
       /* On dark, full gold is legible — use --oro-500 as accent. */
       --accent: var(--oro-500);
-      --accent-foreground: oklch(0.18 0.03 250);
-      --muted: oklch(0.26 0.02 250);
-      --muted-foreground: oklch(0.7 0.02 250);
-      --border: oklch(0.32 0.02 250);
+      --accent-foreground: oklch(0.16 0.045 262);
+      --muted: oklch(0.25 0.04 259);
+      --muted-foreground: oklch(0.72 0.025 258);
+      --border: oklch(0.31 0.045 258);
       color-scheme: dark;
     }
   }
 
   .dark {
-    --background: oklch(0.18 0.03 250);
-    --foreground: oklch(0.95 0.01 250);
-    --card: oklch(0.22 0.03 250);
+    --background: oklch(0.16 0.045 262);
+    --foreground: oklch(0.95 0.012 258);
+    --card: oklch(0.21 0.05 260);
     --primary: var(--azul-500);
-    --primary-foreground: oklch(0.15 0.02 250);
+    --primary-foreground: oklch(0.14 0.03 260);
     --accent: var(--oro-500);
-    --accent-foreground: oklch(0.18 0.03 250);
-    --muted: oklch(0.26 0.02 250);
-    --muted-foreground: oklch(0.7 0.02 250);
-    --border: oklch(0.32 0.02 250);
+    --accent-foreground: oklch(0.16 0.045 262);
+    --muted: oklch(0.25 0.04 259);
+    --muted-foreground: oklch(0.72 0.025 258);
+    --border: oklch(0.31 0.045 258);
     color-scheme: dark;
   }
 
   body {
-    background: var(--background);
+    /* Subtle navy glow at the top for depth (energizes the dark theme). */
+    background-color: var(--background);
+    background-image: radial-gradient(
+      1100px 520px at 50% -8%,
+      color-mix(in oklab, var(--azul-700) 30%, transparent),
+      transparent 70%
+    );
+    background-attachment: fixed;
     color: var(--foreground);
     font-family: var(--font-sans);
   }
@@ -117,6 +124,43 @@
   .tabular-nums,
   table {
     font-variant-numeric: tabular-nums;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Brand accents — gold heading bar + energetic hero band. Add life to the
+   dark theme without loud backgrounds.
+   ------------------------------------------------------------------------- */
+@layer components {
+  .heading-accent {
+    position: relative;
+    padding-left: 0.85rem;
+  }
+  .heading-accent::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.12em;
+    bottom: 0.12em;
+    width: 4px;
+    border-radius: 2px;
+    background: linear-gradient(to bottom, var(--oro-400), var(--oro-600));
+  }
+
+  .hero-band {
+    position: relative;
+    overflow: hidden;
+    background-image:
+      radial-gradient(
+        620px 320px at 12% 0%,
+        color-mix(in oklab, var(--oro-500) 20%, transparent),
+        transparent 62%
+      ),
+      linear-gradient(
+        135deg,
+        var(--azul-900),
+        color-mix(in oklab, var(--azul-700) 55%, var(--card))
+      );
   }
 }
 

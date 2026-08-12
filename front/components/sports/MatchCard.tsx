@@ -68,10 +68,10 @@ export async function MatchCard({
 
   const card = (
     <article
-      className={`rounded-lg border bg-[var(--card)] p-4 transition-colors ${
+      className={`rounded-lg border border-l-[3px] bg-[var(--card)] p-4 transition-all hover:shadow-lg ${
         state === "live"
-          ? "border-[color-mix(in_oklab,var(--live)_45%,var(--border))]"
-          : "border-[var(--border)]"
+          ? "border-[color-mix(in_oklab,var(--live)_45%,var(--border))] border-l-[var(--live)]"
+          : "border-[var(--border)] border-l-[var(--oro-600)] hover:border-[color-mix(in_oklab,var(--oro-500)_45%,var(--border))]"
       }`}
     >
       <div className="mb-3 flex items-center justify-between gap-2">

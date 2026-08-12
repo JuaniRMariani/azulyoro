@@ -9,6 +9,8 @@
     "latestResultsEmpty": "Todavía no hay resultados.",
     "news": "Noticias",
     "newsPlaceholder": "Pronto vas a encontrar acá las últimas noticias y análisis.",
+    "heroKicker": "Sitio no oficial de hinchas",
+    "heroCtaSquad": "Ver plantel",
     "viewAllMatches": "Ver todos los partidos",
     "viewStandings": "Ver posiciones",
     "metaTitle": "Azul y Oro — Partidos, plantel y posiciones de Boca",
@@ -64,7 +66,14 @@
     "events": "Incidencias",
     "eventsEmpty": "Sin incidencias registradas.",
     "lineups": "Formaciones",
-    "playerStats": "Estadísticas de jugadores"
+    "playerStats": "Estadísticas de jugadores",
+    "notStartedTitle": "El partido todavía no comenzó",
+    "notStartedDescription": "Las incidencias, formaciones y estadísticas van a aparecer acá cuando arranque.",
+    "player": "Jugador",
+    "minutesShort": "Min",
+    "goalsShort": "G",
+    "assistsShort": "A",
+    "ratingShort": "Rating"
   },
   "Live": {
     "title": "En vivo",
