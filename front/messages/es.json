@@ -123,5 +123,34 @@
     "red": "Rojas",
     "rating": "Rating",
     "competition": "Competición"
+  },
+  "News": {
+    "title": "Noticias",
+    "description": "Últimas noticias, análisis y editoriales sobre Boca Juniors.",
+    "metaTitle": "Noticias de Boca — Últimas novedades y análisis",
+    "metaDescription": "Las últimas noticias, análisis y editoriales sobre Boca Juniors. Sitio no oficial de hinchas.",
+    "empty": "Todavía no hay noticias publicadas.",
+    "source": "Fuente",
+    "unconfirmed": "No confirmado",
+    "alsoRead": "También leé",
+    "categoryNews": "Noticia",
+    "categoryRumor": "Rumor",
+    "categoryEditorial": "Editorial"
+  },
+  "Transfers": {
+    "title": "Fichajes",
+    "description": "Rumores y novedades del mercado de pases de Boca Juniors. Información no confirmada.",
+    "metaTitle": "Fichajes de Boca — Rumores del mercado de pases",
+    "metaDescription": "Rumores y novedades del mercado de pases de Boca Juniors. Información no confirmada, sitio no oficial.",
+    "empty": "Todavía no hay rumores de fichajes."
+  },
+  "Admin": {
+    "title": "CMS Azul y Oro",
+    "moderation": "Moderación",
+    "banner": "Área admin — protección de acceso pendiente (Fase 4)",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "save": "Guardar",
+    "publish": "Publicar"
   }
 }

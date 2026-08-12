@@ -123,5 +123,34 @@
     "red": "Red",
     "rating": "Rating",
     "competition": "Competition"
+  },
+  "News": {
+    "title": "News",
+    "description": "Latest news, analysis and editorials about Boca Juniors.",
+    "metaTitle": "Boca news — Latest updates and analysis",
+    "metaDescription": "The latest news, analysis and editorials about Boca Juniors. Unofficial fan site.",
+    "empty": "No news published yet.",
+    "source": "Source",
+    "unconfirmed": "Unconfirmed",
+    "alsoRead": "Also read",
+    "categoryNews": "News",
+    "categoryRumor": "Rumor",
+    "categoryEditorial": "Editorial"
+  },
+  "Transfers": {
+    "title": "Transfers",
+    "description": "Rumors and updates from the Boca Juniors transfer market. Unconfirmed information.",
+    "metaTitle": "Boca transfers — Transfer market rumors",
+    "metaDescription": "Rumors and updates from the Boca Juniors transfer market. Unconfirmed information, unofficial site.",
+    "empty": "No transfer rumors yet."
+  },
+  "Admin": {
+    "title": "CMS Azul y Oro",
+    "moderation": "Moderation",
+    "banner": "Admin area — access protection pending (Phase 4)",
+    "approve": "Approve",
+    "reject": "Reject",
+    "save": "Save",
+    "publish": "Publish"
   }
 }

@@ -1,0 +1,45 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import "../globals.css";
+
+export const metadata: Metadata = {
+  title: "CMS · Azul y Oro",
+  robots: { index: false, follow: false },
+};
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="es" className="h-full antialiased">
+      <body className="min-h-full bg-[var(--background)] text-[var(--foreground)]">
+        <header className="border-b border-[var(--border)] bg-[var(--card)]">
+          <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-4">
+            <Link href="/admin/moderacion" className="font-display text-xl font-bold">
+              CMS Azul y Oro
+            </Link>
+            <nav className="flex items-center gap-4 text-sm">
+              <Link
+                href="/admin/moderacion"
+                className="text-[var(--muted-foreground)] transition-colors hover:text-[var(--foreground)]"
+              >
+                Moderación
+              </Link>
+            </nav>
+          </div>
+        </header>
+
+        <div
+          role="alert"
+          className="border-b border-amber-500/30 bg-amber-500/15 px-4 py-2 text-center text-sm font-medium text-amber-700 dark:text-amber-300"
+        >
+          Área admin — protección de acceso pendiente (Fase 4)
+        </div>
+
+        <main className="mx-auto w-full max-w-5xl px-4 py-8">{children}</main>
+      </body>
+    </html>
+  );
+}

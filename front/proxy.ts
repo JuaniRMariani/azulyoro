@@ -4,6 +4,7 @@ import { routing } from "./i18n/routing";
 export default createMiddleware(routing);
 
 export const config = {
-  // Match all pathnames except API routes, Next internals and static files.
-  matcher: "/((?!api|_next|_vercel|.*\\..*).*)",
+  // Match all pathnames except API routes, the (non-localized) admin CMS,
+  // Next internals and static files.
+  matcher: "/((?!api|admin|_next|_vercel|.*\\..*).*)",
 };

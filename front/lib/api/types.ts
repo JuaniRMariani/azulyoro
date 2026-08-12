@@ -127,3 +127,69 @@ export interface CompetitionDto {
   country: string | null;
   logoUrl: string | null;
 }
+
+// ── Content (news / rumors / editorials) ────────────────────────────────────
+
+export type ArticleCategory = "News" | "Rumor" | "Editorial";
+
+/** List-shape article (also used by /featured). */
+export interface ArticleListItemDto {
+  slug: string;
+  category: ArticleCategory;
+  title: string;
+  summary: string | null;
+  coverImageUrl: string | null;
+  isMembersOnly: boolean;
+  publishedAt: string | null;
+}
+
+/** Full article detail. */
+export interface ArticleDto {
+  slug: string;
+  category: ArticleCategory;
+  locale: string;
+  title: string;
+  summary: string | null;
+  bodyHtml: string | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  coverImageUrl: string | null;
+  sourceName: string | null;
+  sourceUrl: string | null;
+  publishedAt: string | null;
+  isMembersOnly?: boolean;
+}
+
+// ── Admin moderation / editing ──────────────────────────────────────────────
+
+export interface ModerationItemDto {
+  id: string;
+  shortId: string;
+  title: string;
+  excerpt: string | null;
+  sourceName: string | null;
+  sourceUrl: string | null;
+  imageUrl: string | null;
+  category: ArticleCategory;
+  status: string;
+  scrapedAt: string | null;
+  publishedAtSource: string | null;
+}
+
+export interface ArticleTranslationInput {
+  title: string;
+  summary: string;
+  bodyHtml: string;
+  metaTitle: string;
+  metaDescription: string;
+}
+
+export interface UpdateArticleInput {
+  translations: {
+    es: ArticleTranslationInput;
+    en: ArticleTranslationInput;
+  };
+  category: ArticleCategory;
+  coverImageUrl: string;
+  isMembersOnly: boolean;
+}

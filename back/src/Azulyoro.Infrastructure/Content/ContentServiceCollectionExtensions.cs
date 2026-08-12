@@ -24,6 +24,8 @@ public static class ContentServiceCollectionExtensions
             http.DefaultRequestHeaders.Accept.ParseAdd("application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.8");
         });
 
+        services.AddHttpClient<IFrontendRevalidator, FrontendRevalidator>();
+
         return services;
     }
 }

@@ -180,7 +180,10 @@ public static class ContentAdminEndpoints
     }
 
     private static async Task<IResult> PublishArticle(
-        AppDbContext db, Guid id, CancellationToken ct)
+        AppDbContext db,
+        Azulyoro.Infrastructure.Content.IFrontendRevalidator revalidator,
+        Guid id,
+        CancellationToken ct)
     {
         var article = await db.Articles
             .Include(a => a.Translations)
@@ -201,6 +204,9 @@ public static class ContentAdminEndpoints
         article.Status = ArticleStatus.Published;
         article.PublishedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
+
+        // Revalidate the front's news list + this article on publish.
+        await revalidator.RevalidateAsync(["news-list", $"article:{article.Slug}"], ct);
 
         return Results.Ok(new { id = article.Id, slug = article.Slug, status = article.Status.ToString() });
     }
