@@ -55,7 +55,8 @@ for item in \
     "${web_env}:NEXT_PUBLIC_API_URL" \
     "${web_env}:NEXT_PUBLIC_SITE_URL" \
     "${web_env}:REVALIDATE_SECRET" \
-    "${web_env}:API_INTERNAL_URL"; do
+    "${web_env}:API_INTERNAL_URL" \
+    "${web_env}:API_INTERNAL_HOST"; do
     require_env "${item%%:*}" "${item#*:}"
 done
 
@@ -151,6 +152,7 @@ if [[ ! -f "$release/.complete" ]]; then
     export NEXT_PUBLIC_API_URL="$(get_env "$web_env" NEXT_PUBLIC_API_URL)"
     export NEXT_PUBLIC_SITE_URL="$(get_env "$web_env" NEXT_PUBLIC_SITE_URL)"
     export API_INTERNAL_URL="$(get_env "$web_env" API_INTERNAL_URL)"
+    export API_INTERNAL_HOST="$(get_env "$web_env" API_INTERNAL_HOST)"
     pnpm --dir front install --frozen-lockfile
     pnpm --dir front build
     cp -a front/.next/standalone/. "$release/front/"
