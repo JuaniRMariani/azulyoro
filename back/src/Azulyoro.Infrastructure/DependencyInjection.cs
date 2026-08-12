@@ -1,5 +1,6 @@
 using Azulyoro.Infrastructure.ApiFootball;
 using Azulyoro.Infrastructure.Persistence;
+using Azulyoro.Infrastructure.Sync;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,9 @@ public static class DependencyInjection
                 .UseNpgsql(connectionString, npgsql =>
                     npgsql.MigrationsHistoryTable("__ef_migrations_history", AppDbContext.Schema))
                 .UseSnakeCaseNamingConvention());
+
+        services.AddScoped<LiveSyncService>();
+        services.AddHostedService<LiveSyncBackgroundService>();
 
         return services;
     }
