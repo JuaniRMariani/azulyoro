@@ -216,60 +216,60 @@
   - DoD: schema aplicado.
   - Deps: F1-2
 
-- [ ] **F3-2 · Scraper RSS-first**
+- [x] **F3-2 · Scraper RSS-first**
   - Qué: ingesta legalmente limpia (regla: reescribir, nunca pegar cuerpos).
   - Pasos: RSS con `System.ServiceModel.Syndication`; AngleSharp fallback HTML por-fuente; cache de `robots.txt`; rate-limit por host (`SemaphoreSlim`/token-bucket, 1 req/2–5s + jitter); UA `AzulYOroBot/1.0 (+https://azulyoro.com.ar/bot)`; requests condicionales (`If-Modified-Since`/`ETag`); dedup (`url_hash` canónico strip-UTM + `title_hash` simhash); `HtmlSanitizer` al ingerir; guardar sólo `title/excerpt/source_url` (no cuerpo completo) → `staging_articles` `status=Pending`.
   - DoD: ingesta real desde La Número 12 (`/feed/`) crea filas en staging sin duplicar en re-run.
   - Deps: F3-1, F0-1 (whitelist)
 
-- [ ] **F3-3 · Seed sources + keyword filter**
+- [x] **F3-3 · Seed sources + keyword filter**
   - Pasos: seed whitelist confirmada (VERIFIED activas; INFERRED inactivas hasta verificar server); `keyword_filter` (`Boca|Xeneize|<jugadores>`) para feeds de sección; marcar `robots_ok`.
   - DoD: `sources` activas en DB, filtro aplicado en ingesta.
   - Deps: F3-2, decisión (a)
 
-- [ ] **F3-4 · Job Hangfire scraping**
+- [x] **F3-4 · Job Hangfire scraping**
   - Pasos: `RecurringJob` cron `*/20 * * * *` + `[DisableConcurrentExecution]`; retries/backoff; visibilidad de fallos en dashboard.
   - DoD: job corre en schedule y puebla staging sin overlap.
   - Deps: F3-2
 
-- [ ] **F3-5 · CMS admin — cola de moderación**
+- [x] **F3-5 · CMS admin — cola de moderación**
   - Qué: flujo humano staging→published (nunca auto-publica cuerpos).
   - Pasos: vista `/admin/moderacion` (list Pending, filtros por status/categoría); acciones aprobar (promueve a `articles` Draft con `staging_id`), rechazar, editar/reescribir; editor de artículo `/admin/articulos/{id}` con traducciones es/en (title/summary/body_html/meta); `SourceAttribution` obligatorio; publish; rumores → `category=rumor`.
   - DoD: un item recorre staging→Draft→Published con traducción es/en.
   - Deps: F3-3
 
-- [ ] **F3-6 · Endpoints contenido (público + admin)**
+- [x] **F3-6 · Endpoints contenido (público + admin)**
   - Pasos: público `GET /api/articles` (category/locale/paginado), `/articles/{slug}?locale=`, `/articles/featured`; admin `moderation` (list/approve/reject), `articles` CRUD + `publish`, `sources` CRUD.
   - DoD: endpoints devuelven JSON correcto por locale.
   - Deps: F3-5
 
-- [ ] **F3-7 · Front noticias + fichajes**
+- [x] **F3-7 · Front noticias + fichajes**
   - Pasos: `/noticias` (list ISR + paginado) y `/noticias/{slug}` (detalle ISR, `SourceAttribution` "Fuente: X" + link-out, byline autor); `/fichajes` (`/en/transfers`) con `RumorBadge` "No confirmado"; `ArticleCard` 16:9; bloque "También leé".
   - DoD: publicar en CMS hace visible la nota en el front.
   - Deps: F3-6, F2-11
 
-- [ ] **F3-8 · Revalidation on-publish**
+- [x] **F3-8 · Revalidation on-publish**
   - Pasos: Route Handler `POST {FRONT}/api/revalidate` protegido por secret; back llama al publicar/actualizar → `revalidateTag('article:{id}')` / `news-list`; taggear fetches de noticias.
   - DoD: publish en back revalida la página sin redeploy.
   - Deps: F3-7
 
-- [ ] **F3-9 · Verificación Fase 3**
+- [x] **F3-9 · Verificación Fase 3**
   - DoD: E2E scrape→moderar/reescribir→publicar→revalidar visible. Commit `feat(news): scraper + moderation cms + front`.
   - Deps: F3-1..F3-8
 
 ## Fase 4 — Socios + Newsletter + Legales
 
-- [ ] **F4-1 · ASP.NET Identity**
+- [x] **F4-1 · ASP.NET Identity**
   - Pasos: extender `users` (display_name, role `Member|Editor|Admin`, locale_pref); Identity con EF; registro/login; lockout; tokens de email confirm; hashing.
   - DoD: registro + login funcionan (integration test).
   - Deps: F1-2
 
-- [ ] **F4-2 · Integración Brevo (transaccional)**
+- [x] **F4-2 · Integración Brevo (transaccional)**
   - Pasos: email service (Brevo API) para verificación de cuenta y reset; plantillas; envío sandbox/dev.
   - DoD: mail de verificación se genera/envía en dev.
   - Deps: F4-1
 
-- [ ] **F4-3 · Cookie auth + CSRF + endpoints auth**
+- [x] **F4-3 · Cookie auth + CSRF + endpoints auth**
   - Pasos: cookie `HttpOnly; Secure; SameSite=Lax; Domain=.azulyoro.com.ar`; antiforgery (`X-XSRF-TOKEN` en mutaciones); CORS credentials; endpoints `register/verify-email/login/logout/me/forgot-password/reset-password/csrf`.
   - DoD: sesión por cookie persiste cross-subdomain (dev localhost equivalente) · CSRF exigido en POST.
   - Deps: F4-1
@@ -284,7 +284,7 @@
   - DoD: contenido members-only sólo visible autenticado.
   - Deps: F4-3, F3-6
 
-- [ ] **F4-6 · Newsletter double opt-in**
+- [x] **F4-6 · Newsletter double opt-in**
   - Pasos: entidad `newsletter_subscribers`; `POST /api/newsletter/subscribe` → `pending` + token firmado single-use con expiración + mail; `GET /confirm?token=` → `confirmed` + `confirmed_at`+IP; `GET /unsubscribe?token=` one-click; header `List-Unsubscribe`; nunca mailear no-confirmados.
   - DoD: E2E subscribe→email→confirm→confirmed · baja one-click funciona.
   - Deps: F4-2
@@ -299,12 +299,12 @@
   - DoD: 4 páginas legales render es/en con datos resueltos (sin `[[...]]`).
   - Deps: decisión (b)(c)
 
-- [ ] **F4-9 · DNS email (SPF/DKIM/DMARC)**
+- [x] **F4-9 · DNS email (SPF/DKIM/DMARC)**
   - Pasos: documentar registros SPF (TXT), DKIM (del proveedor), DMARC (`p=none`+`rua=`) para `mail.azulyoro.com.ar`; se aplican en deploy.
   - DoD: registros documentados y listos para cargar en DNS.
   - Deps: F4-2
 
-- [ ] **F4-10 · Rate-limit auth/newsletter**
+- [x] **F4-10 · Rate-limit auth/newsletter**
   - Pasos: aplicar rate-limiter a `register/login/forgot-password/subscribe`.
   - DoD: 429 tras umbral en cada endpoint.
   - Deps: F4-3, F4-6
@@ -363,4 +363,6 @@
   - **DIFERIDAS (bloqueadas por API-Football key real):** F1-4 (seed + verificación de IDs contra API), F1-5 (sync estático teams/plantel), F1-6 (sync semi standings/fixtures), F1-11 (verificación final con datos reales). El cliente, la lógica de upsert live y los jobs ya están; falta la key para poblar datos reales y cerrar sus DoD.
 - 2026-08-12 (iter E — **Fase 2 COMPLETA y verificada**): F2-1…F2-11. Capa de datos `lib/api` (client con cache tags + cookie-forward opt-in, tipos espejo del contrato, `lib/api/sports.ts`), estados base (QueryState/Skeleton/EmptyState). Componentes deportivos (MatchCard clicable, LiveScoreBadge pulso reduced-motion, FixtureList, StandingsTable Boca resaltado tabular-nums, PlayerCard, PlayerStatsTable, Breadcrumbs+JSON-LD). Páginas: home ISR (próximo+resultados+JSON-LD SportsTeam), partidos+fixture, resultados, plantel+ficha jugador (slug sin UUID, generateStaticParams), posiciones, detalle partido (`/partido/[slug]`↔`/en/match/[slug]`, slug SEO sin UUID, JSON-LD SportsEvent, auto-refresh live vía `router.refresh()`), en-vivo (redirige a detalle si hay live). SEO: `sitemap.ts` dinámico con hreflang es-AR/en/x-default + slugs jugadores/partidos, `robots.ts`, metadataBase+title template. **Fix de mi parte:** `classifyStatus` centralizado (el subagente usaba códigos cortos; la API devuelve nombres de enum). **Verificado runtime:** todas las páginas 200, localización bidireccional (`/en/matches`,`/en/squad`,`/en/match/...`), `/en/en-vivo`→307 `/en/live`, sitemap con hreflang y URLs localizadas, robots OK, plantel renderiza jugadores reales. Delegué F2-2..F2-9 y F1-9 a subagentes con review/fix propio. **Nota:** Lighthouse no corrido (requiere browser tooling); primitivas SEO verificadas por inspección.
 - 2026-08-12 (ajustes del usuario): paleta a **navy más oscuro + oro más anaranjado** (tokens `globals.css`, `icon.svg`/`logo.svg`). Escudo del club: el usuario decidió usarlo (asume responsabilidad legal) — se dejó `BrandMark` que lee `public/brand/logo.svg` (monograma propio default); NO se descarga el asset con copyright (lo carga el usuario). Disclaimer no oficial se mantiene. Detalle en `lessons.md`.
-  - **Próximo:** cargar API key → F1-4/5/6/11 (datos reales), o Fase 3 (noticias + CMS moderación).
+- 2026-08-12 (iter F — **Fase 3 COMPLETA y verificada** — "seguí hasta terminar"): F3-1 (entidades sources/staging/articles/translations/tags + migración `ContentSchema`, 6 tablas). F3-2 (RssScraperService: `System.ServiceModel.Syndication` + rate-limit por host + UA bot + conditional requests + dedup url_hash/title_hash + HtmlSanitizer, **solo título/excerpt/fuente** — nunca el cuerpo; unit test dedup). F3-3 (ContentSeeder 6 fuentes whitelist). F3-4 (job `news-scrape` cron */20; **scraper real confirmado pegándole a feeds** ESPN/Infobae/etc). F3-6 (endpoints públicos articles/{slug}/featured + admin moderation/approve/reject/publish/sources). F3-5 (CMS admin no-localizado `/admin/*`, server actions, banner Fase-4). F3-7 (front noticias/fichajes localizados + ArticleCard/RumorBadge/SourceAttribution link-out obligatorio). F3-8 (revalidación on-publish: `FrontendRevalidator` back → `POST /api/revalidate` front). **Verificado E2E:** staging→moderación(shortId)→approve→publish(200)→artículo público con slug SEO; **publish→revalidate confirmado** (artículo #2 aparece sin esperar 300s); fichajes/noticias/detalle/admin 200; SourceAttribution+link-out presentes.
+- 2026-08-12 (iter G — **Fase 4 backend COMPLETO y verificado**): F4-1 (ASP.NET Identity `AppUser`+roles Member/Editor/Admin, entidades newsletter_subscribers/legal_pages, migración `IdentityAndMembers`). F4-2 (email Brevo + LoggingEmailSender dev-safe según key). F4-3 (cookie auth `azulyoro.auth` HttpOnly/Secure/SameSite=Lax, antiforgery `X-XSRF-TOKEN`, endpoints register/verify-email/login/logout/me/forgot/reset/csrf). F4-6 (newsletter double opt-in, token hasheado single-use, IP+timestamp). F4-9 (SPF/DKIM/DMARC documentados en `deploy/DEPLOY.md`). F4-10 (rate-limit en register/login/forgot/subscribe). **10 unit tests verdes.** **Verificado E2E:** register sin CSRF→400, con CSRF→200, login pre-verificación→401, verify-email→200, login→200+cookie, `/me`→rol Member; newsletter subscribe→Pending→confirm→Confirmed(+IP). **F4-4 (Google OAuth) SALTEADO** (opcional, requiere credenciales Google). F4-5/7/8/11 (zona socios + front auth/newsletter/legales + banner cookies) en curso vía subagente.
+- **Estado global:** Fases 0,2,3 completas + Fase 1 (sin key) + Fase 4 backend. **Bloqueos duros:** API-Football key (F1-4/5/6/11 datos reales), envío real Brevo (integración lista), VPS deploy (configs Nginx/systemd/backup + DNS listos en `deploy/`). **Próximo:** cerrar front F4 + verificación, y cargar keys/VPS para producción.
