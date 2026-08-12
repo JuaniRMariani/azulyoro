@@ -14,10 +14,16 @@ current="$app_root/current"
 api_env=/etc/azulyoro/api.env
 web_env=/etc/azulyoro/web.env
 expected_sha="${1:-}"
-lock_file=/run/lock/azulyoro-deploy.lock
+lock_dir=/run/lock/azulyoro-deploy.lock.d
 
 log() { printf '[azulyoro-deploy] %s\n' "$*"; }
 die() { printf '[azulyoro-deploy] ERROR: %s\n' "$*" >&2; exit 1; }
+
+if ! mkdir "$lock_dir" 2>/dev/null; then
+    die "another deployment is already running"
+fi
+cleanup_lock() { rmdir "$lock_dir" 2>/dev/null || true; }
+trap cleanup_lock EXIT
 
 [[ -d "$repo_root/.git" ]] || die "Git checkout not found at $repo_root"
 [[ -f "$api_env" && -f "$web_env" ]] || die "production env files are missing"
@@ -59,8 +65,6 @@ done
     die "Frontend__BaseUrl and NEXT_PUBLIC_SITE_URL must match"
 
 install -d -m 755 -o root -g root "$releases"
-exec 9>"$lock_file"
-flock -n 9 || die "another deployment is already running"
 
 cd "$repo_root"
 [[ -z "$(git status --porcelain)" ]] || die "checkout has local changes; refusing to overwrite production files"
@@ -100,7 +104,7 @@ if [[ ! -f "$release/.complete" ]]; then
             rm -rf -- "$release"
         fi
     }
-    trap cleanup_build EXIT
+    trap 'cleanup_build; cleanup_lock' EXIT
     [[ ! -e "$release" ]] || die "incomplete release already exists: $release"
 
     log "publishing API $target_sha"
@@ -156,7 +160,7 @@ if [[ ! -f "$release/.complete" ]]; then
     find "$release" -type f -exec chmod 644 {} +
     printf '%s\n' "$target_sha" > "$release/.complete"
     rm -rf -- "$stage"
-    trap - EXIT
+    trap cleanup_lock EXIT
 fi
 
 if [[ ! -f "$release/.complete" ]]; then
