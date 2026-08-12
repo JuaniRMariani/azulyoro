@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { siteName, siteUrl } from "@/lib/site";
 import "../globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -20,7 +21,11 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Azul y Oro",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: siteName,
+    template: `%s · ${siteName}`,
+  },
   description: "Sitio no oficial de fans de Boca Juniors.",
 };
 

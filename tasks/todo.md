@@ -150,7 +150,7 @@
 
 ## Fase 2 — Front deportivo (SEO)
 
-- [ ] **F2-1 · API client front + estados base**
+- [x] **F2-1 · API client front + estados base**
   - Qué: capa de datos + UX de carga/vacío/error.
   - Pasos: `lib/api` (fetch con `NEXT_PUBLIC_API_URL`, tags de cache, forward de cookies en RSC) + tipos TS espejo del contrato `docs/06`; `QueryState`, `Skeleton`, `EmptyState` en `components/ui/`.
   - DoD: fetch de `/api/squad` renderiza en una página de prueba.
