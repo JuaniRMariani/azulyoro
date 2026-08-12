@@ -8,7 +8,8 @@ import { NextResponse } from "next/server";
  * fetch + attach the CSRF token, and relay Set-Cookie back to the browser.
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const API_URL =
+  process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 const IS_DEV = process.env.NODE_ENV !== "production";
 
 /** Serialize the incoming request cookies so the API sees the session. */

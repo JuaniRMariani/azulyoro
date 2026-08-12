@@ -48,7 +48,8 @@ for item in \
     "${api_env}:Cors__Origins__0" \
     "${web_env}:NEXT_PUBLIC_API_URL" \
     "${web_env}:NEXT_PUBLIC_SITE_URL" \
-    "${web_env}:REVALIDATE_SECRET"; do
+    "${web_env}:REVALIDATE_SECRET" \
+    "${web_env}:API_INTERNAL_URL"; do
     require_env "${item%%:*}" "${item#*:}"
 done
 
@@ -89,32 +90,79 @@ release="$releases/$target_sha"
 if [[ ! -f "$release/.complete" ]]; then
     stage="$releases/.build-${target_sha}.$$"
     mkdir -p "$stage/api" "$stage/front"
-    trap 'rm -rf -- "$stage"' EXIT
+    build_unit="azulyoro-build-api-${target_sha:0:12}"
+    cleanup_build() {
+        systemctl stop "$build_unit.service" 2>/dev/null || true
+        if [[ -d "$stage" ]]; then
+            rm -rf -- "$stage"
+        fi
+        if [[ -d "$release" && ! -f "$release/.complete" ]]; then
+            rm -rf -- "$release"
+        fi
+    }
+    trap cleanup_build EXIT
+    [[ ! -e "$release" ]] || die "incomplete release already exists: $release"
 
     log "publishing API $target_sha"
     dotnet restore back/Azulyoro.slnx
     dotnet publish back/src/Azulyoro.Api/Azulyoro.Api.csproj \
         --configuration Release --no-restore --output "$stage/api" --no-self-contained
 
+    # Put the API in its final release path first: migrations and the temporary
+    # build server must execute the exact bits that will become live.
+    mkdir -p "$release"
+    mv "$stage/api" "$release/api"
+    mkdir -p "$release/front"
+
+    log "running database migrations for $target_sha"
+    systemctl start --wait "azulyoro-migrate@${target_sha}.service"
+
+    log "starting temporary API for Next.js data collection"
+    systemd-run --quiet --unit="$build_unit" --collect \
+        --property=User=azulyoro \
+        --property=Group=azulyoro \
+        --property=WorkingDirectory="$release/api" \
+        --property=EnvironmentFile="$api_env" \
+        --property=Environment=ASPNETCORE_ENVIRONMENT=Production \
+        --property=Environment=ASPNETCORE_URLS=http://127.0.0.1:5000 \
+        --property=Restart=no \
+        /usr/bin/dotnet "$release/api/Azulyoro.Api.dll"
+
+    for attempt in {1..60}; do
+        if curl --fail --silent --max-time 2 http://127.0.0.1:5000/health >/dev/null; then
+            break
+        fi
+        if [[ "$attempt" == 60 ]]; then
+            journalctl -u "$build_unit.service" -n 80 --no-pager >&2 || true
+            die "temporary API did not become healthy"
+        fi
+        sleep 1
+    done
+
     log "building Next.js $target_sha"
     export NEXT_PUBLIC_API_URL="$(get_env "$web_env" NEXT_PUBLIC_API_URL)"
     export NEXT_PUBLIC_SITE_URL="$(get_env "$web_env" NEXT_PUBLIC_SITE_URL)"
+    export API_INTERNAL_URL="$(get_env "$web_env" API_INTERNAL_URL)"
     pnpm --dir front install --frozen-lockfile
     pnpm --dir front build
-    cp -a front/.next/standalone/. "$stage/front/"
-    cp -a front/.next/static "$stage/front/.next/static"
-    cp -a front/public "$stage/front/public"
+    cp -a front/.next/standalone/. "$release/front/"
+    cp -a front/.next/static "$release/front/.next/static"
+    cp -a front/public "$release/front/public"
 
-    chown -R root:root "$stage"
-    find "$stage" -type d -exec chmod 755 {} +
-    find "$stage" -type f -exec chmod 644 {} +
-    printf '%s\n' "$target_sha" > "$stage/.complete"
-    mv "$stage" "$release"
+    systemctl stop "$build_unit.service"
+
+    chown -R root:root "$release"
+    find "$release" -type d -exec chmod 755 {} +
+    find "$release" -type f -exec chmod 644 {} +
+    printf '%s\n' "$target_sha" > "$release/.complete"
+    rm -rf -- "$stage"
     trap - EXIT
 fi
 
-log "running database migrations for $target_sha"
-systemctl start --wait "azulyoro-migrate@${target_sha}.service"
+if [[ ! -f "$release/.complete" ]]; then
+    log "running database migrations for $target_sha"
+    systemctl start --wait "azulyoro-migrate@${target_sha}.service"
+fi
 
 previous=""
 if [[ -L "$current" ]]; then

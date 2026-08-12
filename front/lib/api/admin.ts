@@ -2,7 +2,8 @@ import "server-only";
 import { cookies } from "next/headers";
 import type { ModerationItemDto, UpdateArticleInput } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const API_URL =
+  process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
 class AdminApiError extends Error {
   constructor(

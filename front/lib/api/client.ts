@@ -1,6 +1,10 @@
 import "server-only";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+// Server Components and route handlers use the loopback API so builds and
+// runtime requests do not hairpin through Cloudflare. Browser-facing calls
+// continue to use NEXT_PUBLIC_API_URL in the client-specific modules.
+const API_URL =
+  process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
 
 export class ApiError extends Error {
   constructor(
