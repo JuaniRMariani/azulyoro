@@ -117,6 +117,10 @@ if [[ ! -f "$release/.complete" ]]; then
     mkdir -p "$release"
     mv "$stage/api" "$release/api"
     mkdir -p "$release/front"
+    # sudo may run with a restrictive umask. The service account needs to
+    # traverse the immutable release, but must never own or write it.
+    find "$release" -type d -exec chmod 755 {} +
+    find "$release" -type f -exec chmod 644 {} +
 
     log "running database migrations for $target_sha"
     systemctl start --wait "azulyoro-migrate@${target_sha}.service"
