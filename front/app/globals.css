@@ -1,26 +1,119 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Class-based dark mode (with system fallback applied in @layer base). */
+@custom-variant dark (&:where(.dark, .dark *));
 
+/* -------------------------------------------------------------------------
+   Design tokens — "Azul y Oro" (brand-owned colours, never the club crest).
+   Palette values sourced from docs/11-design-system.md (OKLCH).
+   Semantic tokens live in @layer base :root and flip under .dark / system.
+   ------------------------------------------------------------------------- */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --color-live: var(--live);
+
+  --color-azul-900: var(--azul-900);
+  --color-azul-700: var(--azul-700);
+  --color-azul-500: var(--azul-500);
+  --color-oro-600: var(--oro-600);
+  --color-oro-500: var(--oro-500);
+  --color-oro-400: var(--oro-400);
+
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+    /* Brand palette */
+    --azul-900: oklch(0.28 0.09 250);
+    --azul-700: oklch(0.42 0.12 248);
+    --azul-500: oklch(0.55 0.13 246);
+    --oro-600: oklch(0.72 0.13 82);
+    --oro-500: oklch(0.8 0.13 85);
+    --oro-400: oklch(0.86 0.11 88);
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    /* Semantic — light */
+    --background: oklch(0.99 0.005 250);
+    --foreground: oklch(0.2 0.02 250);
+    --card: oklch(1 0 0);
+    --primary: var(--azul-700);
+    --primary-foreground: oklch(0.99 0.005 250);
+    /* Gold on light backgrounds uses --oro-600 for WCAG AA text contrast. */
+    --accent: var(--oro-600);
+    --accent-foreground: oklch(0.2 0.02 250);
+    --muted: oklch(0.95 0.01 250);
+    --muted-foreground: oklch(0.45 0.02 250);
+    --border: oklch(0.9 0.01 250);
+    --success: oklch(0.65 0.15 150);
+    --warning: oklch(0.8 0.14 80);
+    --danger: oklch(0.58 0.19 27);
+    --info: var(--azul-500);
+    --live: oklch(0.62 0.2 27);
+
+    color-scheme: light;
+  }
+
+  /* Semantic — dark. Applied by explicit .dark class OR system preference
+     (unless .light is set to force light). */
+  .dark,
+  :root:not(.light) {
+    @media (prefers-color-scheme: dark) {
+      --background: oklch(0.18 0.03 250);
+      --foreground: oklch(0.95 0.01 250);
+      --card: oklch(0.22 0.03 250);
+      --primary: var(--azul-500);
+      --primary-foreground: oklch(0.15 0.02 250);
+      /* On dark, full gold is legible — use --oro-500 as accent. */
+      --accent: var(--oro-500);
+      --accent-foreground: oklch(0.18 0.03 250);
+      --muted: oklch(0.26 0.02 250);
+      --muted-foreground: oklch(0.7 0.02 250);
+      --border: oklch(0.32 0.02 250);
+      color-scheme: dark;
+    }
+  }
+
+  .dark {
+    --background: oklch(0.18 0.03 250);
+    --foreground: oklch(0.95 0.01 250);
+    --card: oklch(0.22 0.03 250);
+    --primary: var(--azul-500);
+    --primary-foreground: oklch(0.15 0.02 250);
+    --accent: var(--oro-500);
+    --accent-foreground: oklch(0.18 0.03 250);
+    --muted: oklch(0.26 0.02 250);
+    --muted-foreground: oklch(0.7 0.02 250);
+    --border: oklch(0.32 0.02 250);
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+  }
+
+  /* Tabular figures for scoreboards, standings and stat tables. */
+  .tabular-nums,
+  table {
+    font-variant-numeric: tabular-nums;
+  }
 }

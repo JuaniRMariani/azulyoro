@@ -52,7 +52,7 @@
   - DoD: `pnpm build` verde.
   - Deps: F0-2
 
-- [ ] **F0-7 · i18n [locale] + middleware + LocaleSwitcher**
+- [x] **F0-7 · i18n [locale] + middleware + LocaleSwitcher**
   - Qué: routing localizado es/en con next-intl.
   - Pasos: estructura `app/[locale]/...`; middleware next-intl (locales `es`/`en`, `defaultLocale=es`, `x-default`→es); `messages/{es,en}.json` base; `LocaleSwitcher` en `components/ui/`; `<html lang>` por locale.
   - DoD: `/es` y `/en` responden 200 · switch de idioma preserva ruta.
