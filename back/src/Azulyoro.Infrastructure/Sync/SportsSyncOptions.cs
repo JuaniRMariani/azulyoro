@@ -12,4 +12,7 @@ public sealed class SportsSyncOptions
     /// plans can restrict which seasons are available.
     /// </summary>
     public int Season { get; set; } = 2024;
+
+    /// <summary>Maximum player pages allowed by the current provider plan.</summary>
+    public int MaxPlayerPages { get; set; } = 3;
 }

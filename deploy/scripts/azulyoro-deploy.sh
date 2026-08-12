@@ -49,6 +49,7 @@ for item in \
     "${api_env}:SportsSync__TeamExtId" \
     "${api_env}:SportsSync__PrimaryLeagueExtId" \
     "${api_env}:SportsSync__Season" \
+    "${api_env}:SportsSync__MaxPlayerPages" \
     "${api_env}:Brevo__ApiKey" \
     "${api_env}:Brevo__FromEmail" \
     "${api_env}:Frontend__BaseUrl" \

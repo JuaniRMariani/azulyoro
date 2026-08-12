@@ -231,7 +231,7 @@ public sealed class SportsSyncService(
                 },
                 ct);
             all.AddRange(response.Response);
-            totalPages = response.Paging?.Total ?? page;
+            totalPages = Math.Min(response.Paging?.Total ?? page, options.MaxPlayerPages);
             page++;
         }
         while (page <= totalPages);
@@ -392,7 +392,8 @@ public sealed class SportsSyncService(
 
     private void ValidateOptions()
     {
-        if (options.TeamExtId <= 0 || options.PrimaryLeagueExtId <= 0 || options.Season < 1900)
+        if (options.TeamExtId <= 0 || options.PrimaryLeagueExtId <= 0 ||
+            options.Season < 1900 || options.MaxPlayerPages < 1)
         {
             throw new InvalidOperationException(
                 "SportsSync requires positive TeamExtId/PrimaryLeagueExtId and a valid Season.");
