@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Azulyoro.Api/Azulyoro.Api.csproj" />
+    <Project Path="src/Azulyoro.Domain/Azulyoro.Domain.csproj" />
+    <Project Path="src/Azulyoro.Infrastructure/Azulyoro.Infrastructure.csproj" />
+  </Folder>
+</Solution>

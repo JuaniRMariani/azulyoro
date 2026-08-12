@@ -22,7 +22,7 @@
   - DoD: las 3 respuestas escritas en §Decisiones de este archivo.
   - Deps: —
 
-- [ ] **F0-2 · git init + .gitignore (.NET + Next)**
+- [x] **F0-2 · git init + .gitignore (.NET + Next)**
   - Qué: inicializar repo y `.gitignore` combinando plantillas .NET y Next.
   - Pasos: `git init`; `.gitignore` con `bin/ obj/ *.user appsettings.*.Local.json` (.NET) + `node_modules/ .next/ out/ .env*` excepto `.env.example` (Next); verificar con `git check-ignore -v` que no se trague carpetas feature (gotcha `[Rr]elease/`).
   - DoD: repo inicializado · `.gitignore` correcto · commit `chore(repo): init scaffolding`.
