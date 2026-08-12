@@ -1,7 +1,10 @@
 {
   "Home": {
     "title": "Azul y Oro",
-    "tagline": "El hogar de los hinchas de Boca. Sitio no oficial."
+    "tagline": "El hogar de los hinchas de Boca. Sitio no oficial.",
+    "nextMatch": "Próximo partido",
+    "squad": "Plantel",
+    "squadEmpty": "El plantel se está actualizando."
   },
   "Nav": {
     "home": "Inicio",

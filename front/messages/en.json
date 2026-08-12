@@ -1,7 +1,10 @@
 {
   "Home": {
     "title": "Azul y Oro",
-    "tagline": "The home for Boca Juniors fans. Unofficial site."
+    "tagline": "The home for Boca Juniors fans. Unofficial site.",
+    "nextMatch": "Next match",
+    "squad": "Squad",
+    "squadEmpty": "The squad is being updated."
   },
   "Nav": {
     "home": "Home",
