@@ -50,6 +50,17 @@ public static class StandingsEndpoints
                 .Select(s => s.Id);
             query = query.Where(s => seasonIds.Contains(s.SeasonId));
         }
+        else
+        {
+            var currentSeasonId = await db.Seasons.AsNoTracking()
+                .Where(s => s.IsCurrent)
+                .Select(s => (Guid?)s.Id)
+                .FirstOrDefaultAsync(ct);
+            if (currentSeasonId is { } current)
+            {
+                query = query.Where(s => s.SeasonId == current);
+            }
+        }
 
         var rows = await query
             .OrderBy(s => s.CompetitionId)
