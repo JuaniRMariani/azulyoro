@@ -64,7 +64,7 @@
   - DoD: tokens aplicados · sin escudo/tipografía oficial en ningún asset · dark mode funciona.
   - Deps: F0-7
 
-- [ ] **F0-9 · Shell/layout (Header + Footer)**
+- [x] **F0-9 · Shell/layout (Header + Footer)**
   - Qué: layout global con nav + disclaimer no oficial.
   - Pasos: Header (logo, links de `docs/05` §Nav, badge "En vivo" placeholder, `LocaleSwitcher`, Login); Footer con `UnofficialDisclaimer` (texto exacto `02-legal §1`), links legales, atribución "Datos deportivos por API-Football".
   - DoD: layout render en es/en · disclaimer no oficial visible en todas las páginas.
