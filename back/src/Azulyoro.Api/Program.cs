@@ -67,15 +67,23 @@ app.UseAuthorization();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+}
 
-    // Seed representative sports data so the API is verifiable without the
-    // external API-Football key.
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await DevDataSeeder.SeedAsync(db, CancellationToken.None);
-    await ContentSeeder.SeedSourcesAsync(db, CancellationToken.None);
+// Baseline seed (ALL environments): roles, legal pages and news sources are
+// essential content, not dev fixtures. Only the fake sports data is dev-only.
+using (var seedScope = app.Services.CreateScope())
+{
+    var db = seedScope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await IdentitySetup.SeedRolesAsync(seedScope.ServiceProvider);
     await LegalSeeder.SeedLegalAsync(db, CancellationToken.None);
-    await IdentitySetup.SeedRolesAsync(scope.ServiceProvider);
+    await ContentSeeder.SeedSourcesAsync(db, CancellationToken.None);
+
+    if (app.Environment.IsDevelopment())
+    {
+        // Representative sports data so the API is verifiable without the
+        // external API-Football key.
+        await DevDataSeeder.SeedAsync(db, CancellationToken.None);
+    }
 }
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }))
