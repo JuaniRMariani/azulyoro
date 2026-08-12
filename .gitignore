@@ -1,0 +1,44 @@
+# ---------- .NET ----------
+bin/
+obj/
+[Oo]bj/
+[Bb]in/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+project.lock.json
+artifacts/
+appsettings.*.Local.json
+appsettings.Development.Local.json
+*.received.*
+
+# EF Core / tooling
+*.db
+*.db-shm
+*.db-wal
+
+# ---------- Next.js / Node ----------
+node_modules/
+.next/
+out/
+build/
+.pnpm-store/
+.turbo/
+next-env.d.ts
+
+# Env files (keep the example)
+.env
+.env.*
+!.env.example
+
+# ---------- Misc ----------
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+pnpm-debug.log*
+coverage/
+.idea/
+*.swp
