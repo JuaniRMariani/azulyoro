@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale } from "next-intl";
+import { useParams } from "next/navigation";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 
@@ -10,6 +11,7 @@ export function LocaleSwitcher() {
   const active = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const params = useParams();
 
   return (
     <div
@@ -25,10 +27,17 @@ export function LocaleSwitcher() {
             type="button"
             aria-current={isActive ? "true" : undefined}
             disabled={isActive}
-            onClick={() => router.replace(pathname, { locale })}
+            onClick={() =>
+              router.replace(
+                // Preserve dynamic route params when switching locale.
+                // @ts-expect-error -- params are validated at runtime by next-intl
+                { pathname, params },
+                { locale },
+              )
+            }
             className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
               isActive
-                ? "bg-[var(--primary)] text-white"
+                ? "bg-[var(--primary)] text-[var(--primary-foreground)]"
                 : "text-[var(--foreground)] hover:bg-[var(--muted)]"
             }`}
           >

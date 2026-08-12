@@ -58,7 +58,7 @@
   - DoD: `/es` y `/en` responden 200 · switch de idioma preserva ruta.
   - Deps: F0-6
 
-- [ ] **F0-8 · Design system base "Azul y Oro"**
+- [x] **F0-8 · Design system base "Azul y Oro"**
   - Qué: identidad visual propia (sin escudo) + tokens.
   - Pasos: tokens azul/oro OKLCH (de `docs/11`) en `@layer base`; light + **dark mode de arranque**; tipografías display (Space Grotesk/Archivo) + sans (Inter/Manrope) con `font-display: swap` + `tabular-nums` para stats; **wordmark/monograma propio** "AyO"; favicon monograma (no escudo); contraste WCAG AA (oro texto = `--oro-600` sobre claro).
   - DoD: tokens aplicados · sin escudo/tipografía oficial en ningún asset · dark mode funciona.
