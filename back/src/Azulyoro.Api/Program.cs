@@ -3,7 +3,9 @@ using Azulyoro.Api.Features.Admin;
 using Azulyoro.Api.Features.Articles;
 using Azulyoro.Api.Features.Auth;
 using Azulyoro.Api.Features.Competitions;
+using Azulyoro.Api.Features.Legal;
 using Azulyoro.Api.Features.Matches;
+using Azulyoro.Api.Features.Members;
 using Azulyoro.Api.Features.Newsletter;
 using Azulyoro.Api.Features.Players;
 using Azulyoro.Api.Features.Standings;
@@ -39,6 +41,7 @@ if (app.Environment.IsDevelopment())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await DevDataSeeder.SeedAsync(db, CancellationToken.None);
     await ContentSeeder.SeedSourcesAsync(db, CancellationToken.None);
+    await LegalSeeder.SeedLegalAsync(db, CancellationToken.None);
     await IdentitySetup.SeedRolesAsync(scope.ServiceProvider);
 }
 
@@ -55,6 +58,8 @@ app.MapArticlesEndpoints();
 app.MapContentAdminEndpoints();
 app.MapAuthEndpoints();
 app.MapNewsletterEndpoints();
+app.MapLegalEndpoints();
+app.MapMembersEndpoints();
 
 app.UseAppHangfire();
 
