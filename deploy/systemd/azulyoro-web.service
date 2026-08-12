@@ -1,0 +1,21 @@
+[Unit]
+Description=Azulyoro Front (Next.js standalone)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/azulyoro/front
+# Next standalone entrypoint. Copy .next/standalone + .next/static + public here.
+ExecStart=/usr/bin/node /var/www/azulyoro/front/server.js
+Restart=always
+RestartSec=5
+User=azulyoro
+Group=azulyoro
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOSTNAME=127.0.0.1
+# NEXT_PUBLIC_API_URL, NEXT_PUBLIC_SITE_URL, REVALIDATE_SECRET
+EnvironmentFile=/etc/azulyoro/web.env
+
+[Install]
+WantedBy=multi-user.target

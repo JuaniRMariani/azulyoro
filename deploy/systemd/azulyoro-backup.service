@@ -1,0 +1,9 @@
+[Unit]
+Description=Azulyoro Postgres backup (off-box)
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/azulyoro/backup.env
+ExecStart=/var/www/azulyoro/scripts/pg-backup.sh
+User=azulyoro
+Group=azulyoro

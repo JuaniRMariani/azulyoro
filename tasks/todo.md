@@ -211,7 +211,7 @@
 
 ## Fase 3 — Noticias + CMS moderación
 
-- [ ] **F3-1 · Entidades contenido + migración**
+- [x] **F3-1 · Entidades contenido + migración**
   - Pasos: `staging_articles`, `articles`, `article_translations` (unique `(article_id,locale)`), `tags`/`article_tags`, `sources` (campos de `docs/09`: `rss_url`,`type`,`active`,`rate_limit_seconds`,`keyword_filter`,`robots_ok`); migración.
   - DoD: schema aplicado.
   - Deps: F1-2
