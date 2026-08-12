@@ -1,18 +1,20 @@
 using Azulyoro.Domain.Entities;
 using Azulyoro.Domain.Enums;
+using Azulyoro.Infrastructure.Identity;
 using Azulyoro.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
 namespace Azulyoro.Api.Features.Admin;
 
-// TODO: require Admin auth (Phase 4) — all /api/admin routes below must be gated.
 public static class ContentAdminEndpoints
 {
     public static IEndpointRouteBuilder MapContentAdminEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/admin");
+        var group = app.MapGroup("/api/admin")
+            .RequireAuthorization(new AuthorizeAttribute { Roles = AppRoles.Admin });
 
         // Moderation queue.
         group.MapGet("/moderation", GetModeration);

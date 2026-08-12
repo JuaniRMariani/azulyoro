@@ -1,21 +1,50 @@
 [Unit]
 Description=Azulyoro Front (Next.js standalone)
-After=network.target
+Wants=network-online.target
+After=network-online.target azulyoro-api.service
 
 [Service]
 Type=simple
-WorkingDirectory=/var/www/azulyoro/front
-# Next standalone entrypoint. Copy .next/standalone + .next/static + public here.
-ExecStart=/usr/bin/node /var/www/azulyoro/front/server.js
+WorkingDirectory=/var/www/azulyoro/current/front
+ExecStart=/usr/bin/node /var/www/azulyoro/current/front/server.js
 Restart=always
 RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=30
 User=azulyoro
 Group=azulyoro
+
+EnvironmentFile=/etc/azulyoro/web.env
 Environment=NODE_ENV=production
 Environment=PORT=3000
 Environment=HOSTNAME=127.0.0.1
-# NEXT_PUBLIC_API_URL, NEXT_PUBLIC_SITE_URL, REVALIDATE_SECRET
-EnvironmentFile=/etc/azulyoro/web.env
+Environment=NODE_OPTIONS=--max-old-space-size=2048
+
+LimitNOFILE=65535
+TasksMax=2048
+MemoryHigh=2G
+MemoryMax=3G
+
+PrivateTmp=true
+PrivateDevices=true
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+LockPersonality=true
+RestrictRealtime=true
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+RemoveIPC=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/azulyoro /var/log/azulyoro
+StateDirectory=azulyoro
 
 [Install]
 WantedBy=multi-user.target

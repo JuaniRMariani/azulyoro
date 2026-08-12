@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getMe } from "@/lib/api/auth";
 import "../globals.css";
 
 export const metadata: Metadata = {
@@ -7,11 +9,30 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+export const dynamic = "force-dynamic";
+
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const mePromise = getMe();
+
+  return <AdminGate mePromise={mePromise}>{children}</AdminGate>;
+}
+
+async function AdminGate({
+  mePromise,
+  children,
+}: {
+  mePromise: ReturnType<typeof getMe>;
+  children: React.ReactNode;
+}) {
+  const me = await mePromise;
+  if (!me || !me.roles.includes("Admin")) {
+    redirect("/es/ingresar");
+  }
+
   return (
     <html lang="es" className="h-full antialiased">
       <body className="min-h-full bg-[var(--background)] text-[var(--foreground)]">
@@ -35,7 +56,7 @@ export default function AdminLayout({
           role="alert"
           className="border-b border-amber-500/30 bg-amber-500/15 px-4 py-2 text-center text-sm font-medium text-amber-700 dark:text-amber-300"
         >
-          Área admin — protección de acceso pendiente (Fase 4)
+          Área admin — acceso restringido a usuarios con rol Admin
         </div>
 
         <main className="mx-auto w-full max-w-5xl px-4 py-8">{children}</main>

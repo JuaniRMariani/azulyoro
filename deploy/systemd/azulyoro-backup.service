@@ -1,9 +1,24 @@
 [Unit]
 Description=Azulyoro Postgres backup (off-box)
+After=postgresql.service
+Requires=postgresql.service
 
 [Service]
 Type=oneshot
 EnvironmentFile=/etc/azulyoro/backup.env
-ExecStart=/var/www/azulyoro/scripts/pg-backup.sh
+ExecStart=/usr/local/libexec/azulyoro-pg-backup
 User=azulyoro
 Group=azulyoro
+UMask=0077
+TimeoutStartSec=300
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/backups/azulyoro

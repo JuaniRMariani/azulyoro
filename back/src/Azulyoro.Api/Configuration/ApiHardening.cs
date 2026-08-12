@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 namespace Azulyoro.Api.Configuration;
 
@@ -36,23 +37,31 @@ public static class ApiHardening
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            // Applied to sensitive public POSTs (register/login/subscribe) in later phases.
-            options.AddFixedWindowLimiter(SensitivePolicy, limiter =>
-            {
-                limiter.PermitLimit = 5;
-                limiter.Window = TimeSpan.FromSeconds(10);
-                limiter.QueueLimit = 0;
-            });
+            // Applied to sensitive public POSTs. Partition by the client IP so
+            // one abusive client cannot exhaust the quota for every user.
+            options.AddPolicy(SensitivePolicy, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromSeconds(10),
+                        QueueLimit = 0,
+                        AutoReplenishment = true,
+                    }));
         });
 
-        // Behind Nginx + Cloudflare: trust forwarded scheme/host so Secure
-        // cookies and redirects use the real external origin.
+        // Nginx is the only local proxy. It normalizes Cloudflare's client IP
+        // header before forwarding, so the application only trusts headers
+        // received from the loopback proxy and never from the public network.
         services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders =
                 ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-            options.KnownNetworks.Clear();
+            options.KnownIPNetworks.Clear();
             options.KnownProxies.Clear();
+            options.KnownProxies.Add(System.Net.IPAddress.Loopback);
+            options.KnownProxies.Add(System.Net.IPAddress.IPv6Loopback);
         });
 
         return services;

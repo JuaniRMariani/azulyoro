@@ -13,6 +13,7 @@ using Azulyoro.Infrastructure;
 using Azulyoro.Infrastructure.Content;
 using Azulyoro.Infrastructure.Persistence;
 using Hangfire;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,17 @@ builder.Services.AddApiHardening(builder.Configuration);
 builder.Services.AddAppHangfire(builder.Configuration);
 
 var app = builder.Build();
+
+// The deploy pipeline runs migrations in a short-lived, isolated systemd
+// unit before switching the live release. Normal web workers never migrate
+// the database during request-serving startup.
+if (builder.Configuration.GetValue<bool>("Database:MigrateOnly"))
+{
+    using var migrationScope = app.Services.CreateScope();
+    var db = migrationScope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+    return;
+}
 
 app.UseApiHardening();
 

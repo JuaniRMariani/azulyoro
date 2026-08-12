@@ -42,3 +42,8 @@ pnpm-debug.log*
 coverage/
 .idea/
 *.swp
+
+# Production release artifacts are outside Git history but live below the
+# checkout on the VPS.
+/current/
+/releases/

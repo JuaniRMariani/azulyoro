@@ -28,40 +28,20 @@ function inputFrom(fd: FormData): UpdateArticleInput {
   };
 }
 
-export default async function ArticleEditorPage({
-  params,
+function Field({
+  label,
+  name,
+  required,
+  textarea,
+  defaultValue,
 }: {
-  params: Promise<{ id: string }>;
+  label: string;
+  name: string;
+  required?: boolean;
+  textarea?: boolean;
+  defaultValue?: string;
 }) {
-  const { id } = await params;
-
-  async function saveAction(formData: FormData) {
-    "use server";
-    await updateArticle(id, inputFrom(formData));
-    revalidatePath(`/admin/articulos/${id}`);
-  }
-
-  async function publishAction(formData: FormData) {
-    "use server";
-    // Persist current edits before publishing.
-    await updateArticle(id, inputFrom(formData));
-    await publishArticle(id);
-    revalidatePath(`/admin/articulos/${id}`);
-  }
-
-  const Field = ({
-    label,
-    name,
-    required,
-    textarea,
-    defaultValue,
-  }: {
-    label: string;
-    name: string;
-    required?: boolean;
-    textarea?: boolean;
-    defaultValue?: string;
-  }) => (
+  return (
     <label className="flex flex-col gap-1 text-sm">
       <span className="font-medium">
         {label}
@@ -85,8 +65,10 @@ export default async function ArticleEditorPage({
       )}
     </label>
   );
+}
 
-  const LocaleColumn = ({ loc, title }: { loc: "es" | "en"; title: string }) => (
+function LocaleColumn({ loc, title }: { loc: "es" | "en"; title: string }) {
+  return (
     <fieldset className="flex flex-col gap-4 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4">
       <legend className="px-2 font-display text-sm font-semibold uppercase tracking-wide text-[var(--accent)]">
         {title}
@@ -98,6 +80,28 @@ export default async function ArticleEditorPage({
       <Field label="Meta descripción" name={`${loc}.metaDescription`} />
     </fieldset>
   );
+}
+
+export default async function ArticleEditorPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  async function saveAction(formData: FormData) {
+    "use server";
+    await updateArticle(id, inputFrom(formData));
+    revalidatePath(`/admin/articulos/${id}`);
+  }
+
+  async function publishAction(formData: FormData) {
+    "use server";
+    // Persist current edits before publishing.
+    await updateArticle(id, inputFrom(formData));
+    await publishArticle(id);
+    revalidatePath(`/admin/articulos/${id}`);
+  }
 
   return (
     <div className="flex flex-col gap-6">

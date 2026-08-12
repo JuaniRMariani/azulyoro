@@ -4,6 +4,7 @@ Description=Run azulyoro Postgres backup daily
 [Timer]
 OnCalendar=*-*-* 04:30:00
 Persistent=true
+RandomizedDelaySec=30m
 
 [Install]
 WantedBy=timers.target

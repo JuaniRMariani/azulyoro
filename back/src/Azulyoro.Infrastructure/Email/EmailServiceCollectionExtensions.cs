@@ -6,8 +6,9 @@ namespace Azulyoro.Infrastructure.Email;
 
 public static class EmailServiceCollectionExtensions
 {
-    /// <summary>Registers <see cref="BrevoEmailSender"/> when a Brevo API key
-    /// is configured, otherwise the dev-safe <see cref="LoggingEmailSender"/>.</summary>
+    /// <summary>Registers <see cref="BrevoEmailSender"/> in production. The
+    /// logging sender is intentionally available only in development so that
+    /// verification and password-reset links never land in production logs.</summary>
     public static IServiceCollection AddEmailSender(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -18,6 +19,13 @@ public static class EmailServiceCollectionExtensions
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
+            var environment = configuration["ASPNETCORE_ENVIRONMENT"];
+            if (string.Equals(environment, "Production", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    "Brevo:ApiKey must be configured in Production; refusing to log sensitive email links.");
+            }
+
             services.AddSingleton<IEmailSender, LoggingEmailSender>();
             return services;
         }

@@ -1,84 +1,182 @@
-# Deploy — azulyoro (VPS Ubuntu, Nginx + systemd, sin Docker)
+# Deploy de Azul y Oro en VPS compartido
 
-> Requiere acceso al VPS del usuario. Estos son los pasos y artefactos; el
-> deploy real lo ejecuta el usuario. Topología: Cloudflare (proxied, Full
-> strict) → Nginx (443) → Next `127.0.0.1:3000` + Kestrel `127.0.0.1:5000` →
-> Postgres local.
+Topología: Cloudflare proxied → Nginx → Next.js en `127.0.0.1:3000` y API
+.NET en `127.0.0.1:5000` → PostgreSQL local.
 
-## 0. Prerrequisitos en el VPS
-- .NET 10 runtime (`dotnet`), Node 22+, PostgreSQL 16/17, Nginx.
-- Usuario de servicio no-root `azulyoro`. Directorios `/var/www/azulyoro/{api,front}`.
+Este VPS aloja otros proyectos de producción. Los artefactos de Azul y Oro
+usan únicamente `/var/www/azulyoro`, `/etc/azulyoro`, los servicios
+`azulyoro-*` y los hosts `azulyoro.com.ar`/`api.azulyoro.com.ar`. No cambiar
+UFW, certificados ni server blocks de otros sitios como parte de este deploy.
 
-## 1. Base de datos (F5-3)
+## 1. Preparar el usuario y las variables vacías
+
+```bash
+sudo useradd --system --home-dir /var/lib/azulyoro --create-home \
+  --shell /usr/sbin/nologin azulyoro
+sudo install -d -o root -g root -m 0755 /etc/azulyoro
+sudo install -d -o root -g root -m 0755 /var/www/azulyoro/releases
+sudo install -d -o azulyoro -g azulyoro -m 0750 /var/backups/azulyoro
+
+sudo install -o root -g root -m 0600 deploy/env/api.env.example /etc/azulyoro/api.env
+sudo install -o root -g root -m 0600 deploy/env/web.env.example /etc/azulyoro/web.env
+sudo install -o root -g root -m 0600 deploy/env/backup.env.example /etc/azulyoro/backup.env
+```
+
+Los tres archivos quedan vacíos a propósito. Antes de iniciar la aplicación,
+completar como mínimo:
+
+`/etc/azulyoro/api.env`
+
+```ini
+ConnectionStrings__Postgres=
+AllowedHosts=azulyoro.com.ar;api.azulyoro.com.ar
+ApiFootball__Key=
+ApiFootball__BaseUrl=https://v3.football.api-sports.io
+Brevo__ApiKey=
+Brevo__FromEmail=no-reply@azulyoro.com.ar
+Brevo__FromName=Azul y Oro
+Frontend__BaseUrl=https://azulyoro.com.ar
+Frontend__RevalidateSecret=
+Auth__CookieDomain=.azulyoro.com.ar
+Cors__Origins__0=https://azulyoro.com.ar
+```
+
+`/etc/azulyoro/web.env`
+
+```ini
+NEXT_PUBLIC_API_URL=https://api.azulyoro.com.ar
+NEXT_PUBLIC_SITE_URL=https://azulyoro.com.ar
+REVALIDATE_SECRET=
+```
+
+`Frontend__RevalidateSecret` y `REVALIDATE_SECRET` deben ser exactamente el
+mismo secreto. Generar secretos fuera del repositorio, por ejemplo con
+`openssl rand -hex 32`. La contraseña de PostgreSQL tampoco debe quedar en
+GitHub Actions ni en el checkout.
+
+El autodeploy se niega a ejecutar si faltan estas variables o si los dos
+secretos compartidos no coinciden. El API también se niega a iniciar en
+Production sin una clave Brevo, para no escribir links de verificación o reset
+en los logs.
+
+## 2. PostgreSQL
+
+Crear un rol y base exclusivos para este proyecto, con una contraseña que se
+guarde sólo en `ConnectionStrings__Postgres`:
+
 ```bash
 sudo -u postgres createuser azulyoro --pwprompt
 sudo -u postgres createdb azulyoro -O azulyoro
 ```
-Aplicar migraciones: publicar el API y correr `dotnet ef database update` con la
-connection string de prod, o incluir `db.Database.Migrate()` en el arranque.
-**Backups off-box**: `deploy/backup/pg-backup.sh` + timer (ver abajo).
 
-## 2. Build & publish
-```bash
-# API
-dotnet publish back/src/Azulyoro.Api -c Release -o /var/www/azulyoro/api
-# Front (standalone)
-cd front && pnpm install && pnpm build
-cp -r .next/standalone/* /var/www/azulyoro/front/
-cp -r .next/static /var/www/azulyoro/front/.next/static
-cp -r public /var/www/azulyoro/front/public
-```
+No abrir el puerto 5432: debe continuar escuchando sólo en loopback. Las
+migraciones se ejecutan en un servicio oneshot aislado
+(`azulyoro-migrate@<sha>.service`) antes de cambiar el release activo.
 
-## 3. Secrets (EnvironmentFile, root-only)
-`/etc/azulyoro/api.env`:
-```
-ConnectionStrings__Postgres=Host=127.0.0.1;Database=azulyoro;Username=azulyoro;Password=***
-ApiFootball__Key=***
-Brevo__ApiKey=***
-Frontend__RevalidateSecret=***
-Cors__Origins__0=https://azulyoro.com.ar
-```
-`/etc/azulyoro/web.env`:
-```
-NEXT_PUBLIC_API_URL=https://api.azulyoro.com.ar
-NEXT_PUBLIC_SITE_URL=https://azulyoro.com.ar
-REVALIDATE_SECRET=***  # == Frontend__RevalidateSecret
-```
-```bash
-sudo chmod 600 /etc/azulyoro/*.env && sudo chown root:root /etc/azulyoro/*.env
-```
+## 3. Instalar servicios y backup
 
-## 4. systemd (F5-2)
 ```bash
-sudo cp deploy/systemd/azulyoro-api.service /etc/systemd/system/
-sudo cp deploy/systemd/azulyoro-web.service /etc/systemd/system/
+sudo install -o root -g root -m 0755 deploy/backup/pg-backup.sh \
+  /usr/local/libexec/azulyoro-pg-backup
+sudo install -o root -g root -m 0644 deploy/systemd/azulyoro-api.service \
+  /etc/systemd/system/azulyoro-api.service
+sudo install -o root -g root -m 0644 deploy/systemd/azulyoro-web.service \
+  /etc/systemd/system/azulyoro-web.service
+sudo install -o root -g root -m 0644 deploy/systemd/azulyoro-migrate@.service \
+  /etc/systemd/system/azulyoro-migrate@.service
+sudo install -o root -g root -m 0644 deploy/systemd/azulyoro-backup.service \
+  /etc/systemd/system/azulyoro-backup.service
+sudo install -o root -g root -m 0644 deploy/systemd/azulyoro-backup.timer \
+  /etc/systemd/system/azulyoro-backup.timer
+sudo install -o root -g root -m 0750 deploy/scripts/azulyoro-deploy.sh \
+  /usr/local/sbin/azulyoro-deploy
 sudo systemctl daemon-reload
-sudo systemctl enable --now azulyoro-api azulyoro-web
 ```
-Ambos deben quedar `active (running)` y sobrevivir reboot.
 
-## 5. Nginx + TLS (F5-1, F5-4)
+El timer de backup debe quedar desactivado hasta completar `backup.env` con
+PostgreSQL y un destino off-box de `rclone`. Sólo entonces:
+
 ```bash
-sudo cp deploy/nginx/azulyoro.conf /etc/nginx/sites-available/azulyoro
-sudo ln -s /etc/nginx/sites-available/azulyoro /etc/nginx/sites-enabled/
-# Cloudflare Origin Certificate en /etc/nginx/ssl/azulyoro.com.ar.{pem,key}
-sudo nginx -t && sudo systemctl reload nginx
+sudo systemctl enable --now azulyoro-backup.timer
+sudo systemctl start azulyoro-backup.service
+sudo systemctl status azulyoro-backup.timer azulyoro-backup.service --no-pager
 ```
-- Cloudflare: DNS proxied (naranja), SSL/TLS = **Full (strict)**.
-- Completar `set_real_ip_from` con los rangos de https://www.cloudflare.com/ips/.
-- Firewall (ufw): permitir 443/80 sólo desde IPs de Cloudflare.
 
-## 6. Email DNS (F4-9) — `mail.azulyoro.com.ar` (Brevo)
-- **SPF** (TXT en el dominio de envío): `v=spf1 include:spf.brevo.com ~all`
-- **DKIM**: cargar el registro CNAME/TXT que provee Brevo (`brevo1._domainkey`, `brevo2._domainkey`).
-- **DMARC** (TXT `_dmarc`): `v=DMARC1; p=none; rua=mailto:dmarc@azulyoro.com.ar; adkim=r; aspf=r`
-  (subir a `p=quarantine` tras validar alineación).
+Un backup que sólo existe en este VPS no se considera suficiente.
 
-## 7. Verificación E2E prod (F5-5)
-- `https://azulyoro.com.ar` y `https://api.azulyoro.com.ar/health` responden por CF (Full strict).
-- Partido live actualiza; publish en CMS → revalidate visible; signup → email; newsletter DOI.
-- Origen sólo accesible vía Cloudflare (probar IP directa → bloqueada).
+## 4. Primer deploy y autodeploy
 
-## Backups (F5-3)
-`deploy/backup/pg-backup.sh` hace `pg_dump` y lo copia off-box; correr vía
-systemd timer diario (`deploy/systemd/azulyoro-backup.{service,timer}`).
+El deploy es atómico: publica en `releases/<sha>`, corre migraciones, cambia
+el symlink `current`, reinicia los dos servicios y prueba `/health`. Ante un
+fallo intenta volver al release anterior. Nunca hace `git reset --hard` y
+aborta si el checkout tiene cambios locales.
+
+Primer deploy, ejecutado manualmente después de completar los env files:
+
+```bash
+sudo /usr/local/sbin/azulyoro-deploy
+```
+
+El workflow `.github/workflows/deploy.yml` se activa en cada push a `main`.
+Crear en GitHub estos secrets:
+
+- `AZULYORO_DEPLOY_HOST`
+- `AZULYORO_DEPLOY_USER` (una cuenta SSH con `sudo -n` sólo para el deploy; no
+  usar una clave privada dentro del repositorio)
+- `AZULYORO_DEPLOY_SSH_KEY`
+- `AZULYORO_DEPLOY_KNOWN_HOSTS` (generado previamente con `ssh-keyscan` y
+  revisado fuera del runner)
+
+El runner sólo solicita `sudo -n /usr/local/sbin/azulyoro-deploy <sha>`. La
+configuración de secretos de aplicación permanece en `/etc/azulyoro` y no se
+transmite por GitHub.
+
+## 5. Nginx, Cloudflare y TLS
+
+Hace falta crear en Cloudflare, todos proxied (nube naranja):
+
+- `azulyoro.com.ar` → IP del VPS
+- `www.azulyoro.com.ar` → IP del VPS
+- `api.azulyoro.com.ar` → IP del VPS
+
+Configurar SSL/TLS de Cloudflare en **Full (strict)** y emitir un Origin
+Certificate que incluya `azulyoro.com.ar`, `www.azulyoro.com.ar` y
+`api.azulyoro.com.ar`. Guardarlo como:
+
+```text
+/etc/nginx/ssl/azulyoro.com.ar.pem  # root:root, 0644
+/etc/nginx/ssl/azulyoro.com.ar.key  # root:root, 0600
+```
+
+Recién con DNS y certificado listos:
+
+```bash
+sudo install -o root -g root -m 0644 deploy/nginx/cloudflare-allow.conf \
+  /etc/nginx/snippets/azulyoro-cloudflare.conf
+sudo install -o root -g root -m 0644 deploy/nginx/azulyoro.conf \
+  /etc/nginx/sites-available/azulyoro
+sudo ln -s /etc/nginx/sites-available/azulyoro \
+  /etc/nginx/sites-enabled/azulyoro
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+El include de Cloudflare es específico de estos server blocks y bloquea el
+acceso directo al origen. No se modifica la política global de UFW porque eso
+podría cortar otros sistemas productivos del VPS. El include debe actualizarse
+si Cloudflare publica nuevos rangos.
+
+## 6. Comprobaciones
+
+```bash
+sudo systemctl is-active azulyoro-api azulyoro-web
+curl -fsS http://127.0.0.1:5000/health
+curl -I https://azulyoro.com.ar/
+curl -fsS https://api.azulyoro.com.ar/health
+sudo systemctl status azulyoro-api azulyoro-web --no-pager
+```
+
+Validar además que `/api/admin/*` responda `401/403` sin sesión Admin, que el
+registro/login soporte CSRF y rate limit, que el email llegue por Brevo, que
+el publish revalide Next y que el backup pueda restaurarse en un entorno
+separado.

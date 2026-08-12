@@ -1,22 +1,54 @@
 [Unit]
 Description=Azulyoro API (.NET Kestrel)
-After=network.target postgresql.service
+Wants=network-online.target
+After=network-online.target postgresql.service
+Requires=postgresql.service
 
 [Service]
-Type=notify
-WorkingDirectory=/var/www/azulyoro/api
-ExecStart=/usr/bin/dotnet /var/www/azulyoro/api/Azulyoro.Api.dll
+Type=simple
+WorkingDirectory=/var/www/azulyoro/current/api
+ExecStart=/usr/bin/dotnet /var/www/azulyoro/current/api/Azulyoro.Api.dll
 Restart=always
 RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=30
 User=azulyoro
 Group=azulyoro
-# Kestrel binds loopback only; Nginx proxies to it.
-Environment=ASPNETCORE_URLS=http://127.0.0.1:5000
-Environment=ASPNETCORE_ENVIRONMENT=Production
-Environment=DOTNET_NOLOGO=1
-# Secrets (ConnectionStrings__Postgres, ApiFootball__Key, Brevo__ApiKey,
-# Frontend__RevalidateSecret) live here, root-only readable.
+
 EnvironmentFile=/etc/azulyoro/api.env
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=ASPNETCORE_URLS=http://127.0.0.1:5000
+Environment=DOTNET_NOLOGO=1
+Environment=DOTNET_gcServer=1
+Environment=DOTNET_gcConcurrent=1
+Environment=DOTNET_TieredPGO=1
+Environment=DOTNET_GCHeapHardLimitPercent=70
+
+LimitNOFILE=65535
+TasksMax=2048
+MemoryHigh=3G
+MemoryMax=4G
+
+PrivateTmp=true
+PrivateDevices=true
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+LockPersonality=true
+RestrictRealtime=true
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+RemoveIPC=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/azulyoro /var/log/azulyoro
+StateDirectory=azulyoro
 
 [Install]
 WantedBy=multi-user.target

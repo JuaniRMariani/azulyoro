@@ -1,7 +1,8 @@
 namespace Azulyoro.Infrastructure.Email;
 
 /// <summary>Brevo/transactional email config. When <see cref="ApiKey"/> is
-/// empty the app registers <see cref="LoggingEmailSender"/> instead.</summary>
+/// empty in Development the app registers <see cref="LoggingEmailSender"/>;
+/// Production requires a real key.</summary>
 public class EmailOptions
 {
     public const string SectionName = "Brevo";

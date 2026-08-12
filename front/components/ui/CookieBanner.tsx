@@ -1,10 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
 const STORAGE_KEY = "azulyoro.cookie-notice";
+
+function subscribe(onChange: () => void) {
+  window.addEventListener("storage", onChange);
+  return () => window.removeEventListener("storage", onChange);
+}
+
+function getDismissed() {
+  try {
+    return window.localStorage.getItem(STORAGE_KEY) === "dismissed";
+  } catch {
+    return false;
+  }
+}
+
+function getServerDismissed() {
+  return false;
+}
 
 /**
  * Minimal, dismissible cookie notice. Plausible is cookieless and we set no
@@ -13,17 +30,7 @@ const STORAGE_KEY = "azulyoro.cookie-notice";
  */
 export function CookieBanner() {
   const t = useTranslations("Cookies");
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    try {
-      if (localStorage.getItem(STORAGE_KEY) !== "dismissed") {
-        setVisible(true);
-      }
-    } catch {
-      setVisible(true);
-    }
-  }, []);
+  const dismissed = useSyncExternalStore(subscribe, getDismissed, getServerDismissed);
 
   function dismiss() {
     try {
@@ -31,10 +38,10 @@ export function CookieBanner() {
     } catch {
       /* ignore storage errors */
     }
-    setVisible(false);
+    window.dispatchEvent(new Event("storage"));
   }
 
-  if (!visible) return null;
+  if (dismissed) return null;
 
   return (
     <div

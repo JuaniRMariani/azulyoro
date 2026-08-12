@@ -1,16 +1,35 @@
 #!/usr/bin/env bash
-# Daily Postgres backup for azulyoro, copied off-box.
-set -euo pipefail
+set -Eeuo pipefail
+umask 077
 
-STAMP="$(date -u +%Y%m%d-%H%M%S)"
-OUT="/var/backups/azulyoro/azulyoro-${STAMP}.sql.gz"
-mkdir -p "$(dirname "$OUT")"
+: "${PGHOST:?PGHOST is required}"
+: "${PGPORT:?PGPORT is required}"
+: "${PGUSER:?PGUSER is required}"
+: "${PGDATABASE:?PGDATABASE is required}"
+: "${PGPASSWORD:?PGPASSWORD is required}"
+: "${BACKUP_REMOTE:?BACKUP_REMOTE is required for off-box backup}"
 
-PGPASSWORD="${PGPASSWORD:?set PGPASSWORD}" pg_dump -h 127.0.0.1 -U azulyoro azulyoro | gzip > "$OUT"
+RCLONE_BIN="${RCLONE_BIN:-/usr/bin/rclone}"
+[[ -x "$RCLONE_BIN" ]] || { echo "rclone not found: $RCLONE_BIN" >&2; exit 1; }
 
-# Ship off-box (configure destination): e.g. rclone/scp/s3.
-# rclone copy "$OUT" remote:azulyoro-backups/
+backup_dir=/var/backups/azulyoro
+install -d -m 700 "$backup_dir"
+stamp="$(date -u +%Y%m%d-%H%M%S)"
+out="$backup_dir/azulyoro-${stamp}.sql.gz"
 
-# Retain last 14 local dumps.
-ls -1t /var/backups/azulyoro/*.sql.gz | tail -n +15 | xargs -r rm -f
-echo "backup written: $OUT"
+pg_dump --no-owner --no-privileges --format=plain |
+    gzip --best > "$out"
+
+"$RCLONE_BIN" copy "$out" "$BACKUP_REMOTE"
+
+mapfile -t old_dumps < <(
+    find "$backup_dir" -maxdepth 1 -type f -name 'azulyoro-*.sql.gz' -printf '%T@ %p\n' |
+        sort -nr | awk 'NR > 14 { $1=""; sub(/^ /, ""); print }'
+)
+for dump in "${old_dumps[@]}"; do
+    case "$dump" in
+        "$backup_dir"/azulyoro-*.sql.gz) rm -f -- "$dump" ;;
+    esac
+done
+
+echo "backup written and copied off-box: $out"

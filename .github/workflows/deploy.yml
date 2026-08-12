@@ -1,0 +1,39 @@
+name: Deploy production
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: azulyoro-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy through the production SSH account
+        env:
+          DEPLOY_HOST: ${{ secrets.AZULYORO_DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.AZULYORO_DEPLOY_USER }}
+          DEPLOY_KEY: ${{ secrets.AZULYORO_DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.AZULYORO_DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_SHA: ${{ github.sha }}
+        run: |
+          set -Eeuo pipefail
+          test -n "$DEPLOY_HOST"
+          test -n "$DEPLOY_USER"
+          test -n "$DEPLOY_KEY"
+          test -n "$DEPLOY_KNOWN_HOSTS"
+          install -d -m 700 "$RUNNER_TEMP/azulyoro-ssh"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$RUNNER_TEMP/azulyoro-ssh/known_hosts"
+          chmod 600 "$RUNNER_TEMP/azulyoro-ssh/known_hosts"
+          eval "$(ssh-agent -s)"
+          ssh-add - <<< "$DEPLOY_KEY"
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$RUNNER_TEMP/azulyoro-ssh/known_hosts" \
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            "sudo -n /usr/local/sbin/azulyoro-deploy '$DEPLOY_SHA'"

@@ -1,0 +1,33 @@
+[Unit]
+Description=Azulyoro database migration for release %i
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/var/www/azulyoro/releases/%i/api
+ExecStart=/usr/bin/dotnet /var/www/azulyoro/releases/%i/api/Azulyoro.Api.dll
+EnvironmentFile=/etc/azulyoro/api.env
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=ASPNETCORE_URLS=http://127.0.0.1:5001
+Environment=Database__MigrateOnly=true
+User=azulyoro
+Group=azulyoro
+TimeoutStartSec=300
+
+PrivateTmp=true
+PrivateDevices=true
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/azulyoro /var/log/azulyoro
+StateDirectory=azulyoro
