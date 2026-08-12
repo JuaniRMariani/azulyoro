@@ -28,7 +28,7 @@
   - DoD: repo inicializado · `.gitignore` correcto · commit `chore(repo): init scaffolding`.
   - Deps: —
 
-- [ ] **F0-3 · Scaffold back .NET 10 (VSA)**
+- [x] **F0-3 · Scaffold back .NET 10 (VSA)**
   - Qué: solución + 3 proyectos base (Api host + Domain + Infrastructure), estructura VSA (`Features/`).
   - Pasos: `dotnet new sln -n Azulyoro`; `Azulyoro.Api` (webapi `--use-minimal-apis`) en `src/`; `Azulyoro.Domain` + `Azulyoro.Infrastructure` (classlib); `dotnet sln add`; crear carpetas `Features/{Matches,Players,Standings,Articles,Newsletter,Auth,Members,Admin,Legal}`.
   - DoD: `dotnet build` verde · estructura de `docs/07` creada.
