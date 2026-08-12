@@ -1,5 +1,6 @@
 using System.Security.Cryptography.X509Certificates;
 using Azulyoro.Api.Configuration;
+using Microsoft.AspNetCore.DataProtection;
 using Azulyoro.Api.Features.Admin;
 using Azulyoro.Api.Features.Articles;
 using Azulyoro.Api.Features.Auth;
