@@ -78,8 +78,6 @@ if (app.Environment.IsDevelopment())
     await IdentitySetup.SeedRolesAsync(scope.ServiceProvider);
 }
 
-app.UseHttpsRedirection();
-
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }))
     .WithName("HealthCheck");
 
