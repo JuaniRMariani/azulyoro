@@ -31,6 +31,9 @@ public class SyncJobs(
         Func<CancellationToken, Task> work,
         CancellationToken ct)
     {
+        using var syncLock = JobStorage.Current.GetConnection()
+            .AcquireDistributedLock("azulyoro:sports-sync", TimeSpan.FromMinutes(10));
+
         try
         {
             await work(ct);
@@ -39,6 +42,10 @@ public class SyncJobs(
         }
         catch (Exception ex)
         {
+            // A failed transaction leaves newly added entities tracked. Clear
+            // them before recording the failure, otherwise SaveChanges can
+            // repeat the same unique-key insert and mask the real error.
+            db.ChangeTracker.Clear();
             await MarkStateAsync(resource, ex.Message, CancellationToken.None);
             logger.LogError(ex, "Sync job '{Resource}' failed.", resource);
             throw;
