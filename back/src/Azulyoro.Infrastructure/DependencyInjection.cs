@@ -33,6 +33,7 @@ public static class DependencyInjection
         services.Configure<SportsSyncOptions>(
             configuration.GetSection(SportsSyncOptions.SectionName));
         services.AddScoped<ISportsSyncService, SportsSyncService>();
+        services.AddScoped<IFixtureDetailSyncService, FixtureDetailSyncService>();
         services.AddHostedService<LiveSyncBackgroundService>();
 
         return services;

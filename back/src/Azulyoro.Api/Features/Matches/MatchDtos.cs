@@ -47,24 +47,31 @@ public record EventDto(
     string Type,
     string? Detail,
     Guid? TeamId,
+    string? TeamName,
     Guid? PlayerId,
-    Guid? AssistPlayerId);
+    string? PlayerName,
+    Guid? AssistPlayerId,
+    string? AssistName);
 
 public record LineupPlayerDto(
     Guid PlayerId,
+    string? PlayerName,
     bool IsStarter,
     string? Grid,
     int? Number);
 
 public record LineupDto(
     Guid TeamId,
+    string? TeamName,
     string? Formation,
     string? CoachName,
     IReadOnlyList<LineupPlayerDto> Players);
 
 public record PlayerStatDto(
     Guid PlayerId,
+    string? PlayerName,
     Guid TeamId,
+    string? TeamName,
     int? Minutes,
     decimal? Rating,
     int Goals,

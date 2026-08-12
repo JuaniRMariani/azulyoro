@@ -13,6 +13,12 @@ public class ApiFixtureItem
 
     [JsonPropertyName("events")]
     public List<ApiFixtureEvent> Events { get; set; } = new();
+
+    [JsonPropertyName("lineups")]
+    public List<ApiFixtureLineup> Lineups { get; set; } = new();
+
+    [JsonPropertyName("players")]
+    public List<ApiFixturePlayers> Players { get; set; } = new();
 }
 
 public class ApiFixtureCore
@@ -82,4 +88,154 @@ public class ApiEventRef
 
     [JsonPropertyName("name")]
     public string? Name { get; set; }
+}
+
+// ── Lineups ─────────────────────────────────────────────────────────────────
+
+public class ApiFixtureLineup
+{
+    [JsonPropertyName("team")]
+    public ApiEventRef Team { get; set; } = new();
+
+    [JsonPropertyName("formation")]
+    public string? Formation { get; set; }
+
+    [JsonPropertyName("coach")]
+    public ApiLineupCoach Coach { get; set; } = new();
+
+    [JsonPropertyName("startXI")]
+    public List<ApiLineupSlot> StartXI { get; set; } = new();
+
+    [JsonPropertyName("substitutes")]
+    public List<ApiLineupSlot> Substitutes { get; set; } = new();
+}
+
+public class ApiLineupCoach
+{
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+}
+
+public class ApiLineupSlot
+{
+    [JsonPropertyName("player")]
+    public ApiLineupPlayer Player { get; set; } = new();
+}
+
+public class ApiLineupPlayer
+{
+    [JsonPropertyName("id")]
+    public int? Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("number")]
+    public int? Number { get; set; }
+
+    [JsonPropertyName("pos")]
+    public string? Pos { get; set; }
+
+    [JsonPropertyName("grid")]
+    public string? Grid { get; set; }
+}
+
+// ── Per-fixture player statistics ───────────────────────────────────────────
+
+public class ApiFixturePlayers
+{
+    [JsonPropertyName("team")]
+    public ApiEventRef Team { get; set; } = new();
+
+    [JsonPropertyName("players")]
+    public List<ApiFixturePlayerEntry> Players { get; set; } = new();
+}
+
+public class ApiFixturePlayerEntry
+{
+    [JsonPropertyName("player")]
+    public ApiEventRef Player { get; set; } = new();
+
+    [JsonPropertyName("statistics")]
+    public List<ApiFixturePlayerStat> Statistics { get; set; } = new();
+}
+
+public class ApiFixturePlayerStat
+{
+    [JsonPropertyName("games")]
+    public ApiFixtureStatGames Games { get; set; } = new();
+
+    [JsonPropertyName("goals")]
+    public ApiFixtureStatGoals Goals { get; set; } = new();
+
+    [JsonPropertyName("shots")]
+    public ApiFixtureStatShots Shots { get; set; } = new();
+
+    [JsonPropertyName("passes")]
+    public ApiFixtureStatPasses Passes { get; set; } = new();
+
+    [JsonPropertyName("tackles")]
+    public ApiFixtureStatTackles Tackles { get; set; } = new();
+
+    [JsonPropertyName("cards")]
+    public ApiFixtureStatCards Cards { get; set; } = new();
+}
+
+public class ApiFixtureStatGames
+{
+    [JsonPropertyName("minutes")]
+    public int? Minutes { get; set; }
+
+    /// <summary>Rating arrives as a string (e.g. "7.2") or null.</summary>
+    [JsonPropertyName("rating")]
+    public string? Rating { get; set; }
+
+    [JsonPropertyName("number")]
+    public int? Number { get; set; }
+
+    [JsonPropertyName("position")]
+    public string? Position { get; set; }
+}
+
+public class ApiFixtureStatGoals
+{
+    [JsonPropertyName("total")]
+    public int? Total { get; set; }
+
+    [JsonPropertyName("assists")]
+    public int? Assists { get; set; }
+}
+
+public class ApiFixtureStatShots
+{
+    [JsonPropertyName("total")]
+    public int? Total { get; set; }
+
+    [JsonPropertyName("on")]
+    public int? On { get; set; }
+}
+
+public class ApiFixtureStatPasses
+{
+    [JsonPropertyName("total")]
+    public int? Total { get; set; }
+
+    /// <summary>Accuracy arrives as a string (e.g. "84" or "84%") or null.</summary>
+    [JsonPropertyName("accuracy")]
+    public string? Accuracy { get; set; }
+}
+
+public class ApiFixtureStatTackles
+{
+    [JsonPropertyName("total")]
+    public int? Total { get; set; }
+}
+
+public class ApiFixtureStatCards
+{
+    [JsonPropertyName("yellow")]
+    public int? Yellow { get; set; }
+
+    [JsonPropertyName("red")]
+    public int? Red { get; set; }
 }

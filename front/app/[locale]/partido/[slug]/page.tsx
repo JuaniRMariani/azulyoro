@@ -8,7 +8,6 @@ import {
   getMatchEvents,
   getMatchLineups,
   getMatchPlayerStats,
-  getSquad,
 } from "@/lib/api/sports";
 import { matchSlug } from "@/lib/slug";
 import { classifyStatus } from "@/lib/matchStatus";
@@ -87,16 +86,16 @@ export default async function MatchDetailPage({
   const state = classifyStatus(match.status);
   const played = state !== "scheduled";
 
-  const [detail, events, lineups, stats, squad] = await Promise.all([
+  const [detail, events, lineups, stats] = await Promise.all([
     getMatch(match.id),
     played ? getMatchEvents(match.id) : Promise.resolve([]),
     played ? getMatchLineups(match.id) : Promise.resolve([]),
     played ? getMatchPlayerStats(match.id) : Promise.resolve([]),
-    getSquad().catch(() => []),
   ]);
 
-  const playerName = new Map(squad.map((p) => [p.id, p.name]));
-  const teamName = (id: string | null) =>
+  // Names now come from the API. Fall back to the match's team names by id
+  // when the per-row team name is absent.
+  const teamNameById = (id: string | null) =>
     id === match.homeTeamId
       ? match.homeTeamName
       : id === match.awayTeamId
@@ -213,11 +212,12 @@ export default async function MatchDetailPage({
                   </span>
                   <span className="font-medium">{e.type}</span>
                   <span className="text-[var(--muted-foreground)]">
-                    {e.playerId ? (playerName.get(e.playerId) ?? "") : ""}
+                    {e.playerName ?? ""}
+                    {e.assistName ? ` (${e.assistName})` : ""}
                     {e.detail ? ` · ${e.detail}` : ""}
                   </span>
                   <span className="ml-auto text-xs text-[var(--muted-foreground)]">
-                    {teamName(e.teamId)}
+                    {e.teamName ?? teamNameById(e.teamId)}
                   </span>
                 </li>
               ))}
@@ -236,7 +236,7 @@ export default async function MatchDetailPage({
             {lineups.map((lu) => (
               <div key={lu.teamId} className="rounded-lg border border-[var(--border)] p-4">
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="font-semibold">{teamName(lu.teamId)}</span>
+                  <span className="font-semibold">{lu.teamName ?? teamNameById(lu.teamId)}</span>
                   <span className="text-xs text-[var(--muted-foreground)]">{lu.formation}</span>
                 </div>
                 <ul className="flex flex-col gap-1 text-sm">
@@ -245,7 +245,7 @@ export default async function MatchDetailPage({
                       <span className="w-6 tabular-nums text-[var(--muted-foreground)]">
                         {p.number ?? "–"}
                       </span>
-                      <span>{playerName.get(p.playerId) ?? "—"}</span>
+                      <span>{p.playerName ?? "—"}</span>
                     </li>
                   ))}
                 </ul>
@@ -273,7 +273,7 @@ export default async function MatchDetailPage({
               <tbody>
                 {stats.map((s, i) => (
                   <tr key={i} className="border-t border-[var(--border)]">
-                    <td className="px-3 py-2">{playerName.get(s.playerId) ?? "—"}</td>
+                    <td className="px-3 py-2">{s.playerName ?? "—"}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{s.minutes ?? 0}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{s.goals}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{s.assists}</td>

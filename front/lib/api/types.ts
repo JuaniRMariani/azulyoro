@@ -42,12 +42,16 @@ export interface EventDto {
   type: string;
   detail: string | null;
   teamId: string | null;
+  teamName: string | null;
   playerId: string | null;
+  playerName: string | null;
   assistPlayerId: string | null;
+  assistName: string | null;
 }
 
 export interface LineupPlayerDto {
   playerId: string;
+  playerName: string | null;
   isStarter: boolean;
   grid: string | null;
   number: number | null;
@@ -55,6 +59,7 @@ export interface LineupPlayerDto {
 
 export interface LineupDto {
   teamId: string;
+  teamName: string | null;
   formation: string | null;
   coachName: string | null;
   players: LineupPlayerDto[];
@@ -62,7 +67,9 @@ export interface LineupDto {
 
 export interface PlayerStatDto {
   playerId: string;
+  playerName: string | null;
   teamId: string;
+  teamName: string | null;
   minutes: number | null;
   rating: number | null;
   goals: number;

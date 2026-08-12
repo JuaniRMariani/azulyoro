@@ -115,6 +115,13 @@ if (app.Environment.IsDevelopment())
             j => j.SyncStaticAsync(CancellationToken.None));
         return Results.Accepted();
     });
+
+    app.MapPost("/api/dev/sync-fixture-details", (Hangfire.IBackgroundJobClient jobs) =>
+    {
+        jobs.Enqueue<Azulyoro.Api.Features.Admin.SyncJobs>(
+            j => j.SyncFixtureDetailsAsync(CancellationToken.None));
+        return Results.Accepted();
+    });
 }
 
 app.Run();

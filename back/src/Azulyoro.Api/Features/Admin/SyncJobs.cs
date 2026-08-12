@@ -13,10 +13,12 @@ namespace Azulyoro.Api.Features.Admin;
 public class SyncJobs(
     AppDbContext db,
     Azulyoro.Infrastructure.Sync.ISportsSyncService sports,
+    Azulyoro.Infrastructure.Sync.IFixtureDetailSyncService fixtureDetails,
     ILogger<SyncJobs> logger)
 {
     public const string StaticJobId = "sync-static";
     public const string SemiJobId = "sync-semi";
+    public const string FixtureDetailsJobId = "sync-fixture-details";
 
     [DisableConcurrentExecution(600)]
     public Task SyncStaticAsync(CancellationToken ct) =>
@@ -25,6 +27,13 @@ public class SyncJobs(
     [DisableConcurrentExecution(600)]
     public Task SyncSemiAsync(CancellationToken ct) =>
         RunAsync("semi:standings+fixtures", sports.SyncSemiAsync, ct);
+
+    [DisableConcurrentExecution(600)]
+    public Task SyncFixtureDetailsAsync(CancellationToken ct) =>
+        RunAsync(
+            "sports:fixture-details",
+            token => fixtureDetails.BackfillFinishedAsync(8, token),
+            ct);
 
     private async Task RunAsync(
         string resource,

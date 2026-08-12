@@ -39,6 +39,8 @@ public static class HangfireSetup
             SyncJobs.StaticJobId, job => job.SyncStaticAsync(CancellationToken.None), Cron.Daily);
         RecurringJob.AddOrUpdate<SyncJobs>(
             SyncJobs.SemiJobId, job => job.SyncSemiAsync(CancellationToken.None), "*/45 * * * *");
+        RecurringJob.AddOrUpdate<SyncJobs>(
+            SyncJobs.FixtureDetailsJobId, job => job.SyncFixtureDetailsAsync(CancellationToken.None), "*/30 * * * *");
         RecurringJob.AddOrUpdate<ScrapeArticlesJob>(
             ScrapeArticlesJob.JobId, job => job.RunAsync(CancellationToken.None), "*/20 * * * *");
 

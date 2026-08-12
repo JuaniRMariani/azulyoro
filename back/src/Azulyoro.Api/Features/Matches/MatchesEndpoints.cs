@@ -188,7 +188,12 @@ public static class MatchesEndpoints
             .OrderBy(e => e.ExtSeq)
             .Select(e => new EventDto(
                 e.Minute, e.ExtraMinute, e.Type.ToString(), e.Detail,
-                e.TeamId, e.PlayerId, e.AssistPlayerId))
+                e.TeamId,
+                db.Teams.Where(t => t.Id == e.TeamId).Select(t => t.Name).FirstOrDefault(),
+                e.PlayerId,
+                db.Players.Where(p => p.Id == e.PlayerId).Select(p => p.Name).FirstOrDefault(),
+                e.AssistPlayerId,
+                db.Players.Where(p => p.Id == e.AssistPlayerId).Select(p => p.Name).FirstOrDefault()))
             .ToListAsync(ct);
 
         CacheControl.SetPublicMaxAge(http, 60);
@@ -205,12 +210,16 @@ public static class MatchesEndpoints
             .Where(l => l.FixtureId == id)
             .Select(l => new LineupDto(
                 l.TeamId,
+                db.Teams.Where(t => t.Id == l.TeamId).Select(t => t.Name).FirstOrDefault(),
                 l.Formation,
                 l.CoachName,
                 l.Players
                     .OrderByDescending(p => p.IsStarter)
                     .ThenBy(p => p.Number)
-                    .Select(p => new LineupPlayerDto(p.PlayerId, p.IsStarter, p.Grid, p.Number))
+                    .Select(p => new LineupPlayerDto(
+                        p.PlayerId,
+                        db.Players.Where(pl => pl.Id == p.PlayerId).Select(pl => pl.Name).FirstOrDefault(),
+                        p.IsStarter, p.Grid, p.Number))
                     .ToList()))
             .ToListAsync(ct);
 
@@ -227,7 +236,11 @@ public static class MatchesEndpoints
         var stats = await db.FixturePlayerStats.AsNoTracking()
             .Where(s => s.FixtureId == id)
             .Select(s => new PlayerStatDto(
-                s.PlayerId, s.TeamId, s.Minutes, s.Rating,
+                s.PlayerId,
+                db.Players.Where(p => p.Id == s.PlayerId).Select(p => p.Name).FirstOrDefault(),
+                s.TeamId,
+                db.Teams.Where(t => t.Id == s.TeamId).Select(t => t.Name).FirstOrDefault(),
+                s.Minutes, s.Rating,
                 s.Goals, s.Assists, s.ShotsTotal, s.ShotsOn,
                 s.Passes, s.PassesAccuracy, s.Tackles, s.Yellow, s.Red))
             .ToListAsync(ct);
