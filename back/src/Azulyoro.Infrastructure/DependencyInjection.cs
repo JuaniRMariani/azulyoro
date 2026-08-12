@@ -1,5 +1,6 @@
 using Azulyoro.Infrastructure.ApiFootball;
 using Azulyoro.Infrastructure.Content;
+using Azulyoro.Infrastructure.Email;
 using Azulyoro.Infrastructure.Persistence;
 using Azulyoro.Infrastructure.Sync;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ public static class DependencyInjection
     {
         services.AddApiFootballClient(configuration);
         services.AddContentServices(configuration);
+        services.AddEmailSender(configuration);
 
         var connectionString = configuration.GetConnectionString("Postgres")
             ?? throw new InvalidOperationException(

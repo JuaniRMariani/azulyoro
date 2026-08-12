@@ -1,8 +1,10 @@
 using Azulyoro.Api.Configuration;
 using Azulyoro.Api.Features.Admin;
 using Azulyoro.Api.Features.Articles;
+using Azulyoro.Api.Features.Auth;
 using Azulyoro.Api.Features.Competitions;
 using Azulyoro.Api.Features.Matches;
+using Azulyoro.Api.Features.Newsletter;
 using Azulyoro.Api.Features.Players;
 using Azulyoro.Api.Features.Standings;
 using Azulyoro.Infrastructure;
@@ -16,13 +18,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddAppIdentity();
+builder.Services.AddAppIdentity(builder.Configuration);
 builder.Services.AddApiHardening(builder.Configuration);
 builder.Services.AddAppHangfire(builder.Configuration);
 
 var app = builder.Build();
 
 app.UseApiHardening();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
@@ -48,6 +53,8 @@ app.MapStandingsEndpoints();
 app.MapCompetitionsEndpoints();
 app.MapArticlesEndpoints();
 app.MapContentAdminEndpoints();
+app.MapAuthEndpoints();
+app.MapNewsletterEndpoints();
 
 app.UseAppHangfire();
 
