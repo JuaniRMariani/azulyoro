@@ -40,7 +40,7 @@
   - DoD: `dotnet restore` + `dotnet build` verdes.
   - Deps: F0-3
 
-- [ ] **F0-5 · DbContext base + Postgres local**
+- [x] **F0-5 · DbContext base + Postgres local**
   - Qué: `AppDbContext` mínimo + conexión a Postgres 17 local.
   - Pasos: crear DB `azulyoro`; `DbContext` en Infra + registro en Api con Npgsql; connection string vía `user-secrets`; migración vacía de prueba.
   - DoD: `dotnet ef database update` aplica sin error (schema vacío/base creado).
