@@ -16,8 +16,10 @@ public static class DependencyInjection
                 "Connection string 'Postgres' is not configured. Set it via user-secrets (dev) or EnvironmentFile (prod).");
 
         services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(connectionString, npgsql =>
-                npgsql.MigrationsHistoryTable("__ef_migrations_history", AppDbContext.Schema)));
+            options
+                .UseNpgsql(connectionString, npgsql =>
+                    npgsql.MigrationsHistoryTable("__ef_migrations_history", AppDbContext.Schema))
+                .UseSnakeCaseNamingConvention());
 
         return services;
     }

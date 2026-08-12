@@ -84,7 +84,7 @@
 
 ## Fase 1 — Módulo Deportivo (backend + sync)
 
-- [ ] **F1-1 · Entidades Domain**
+- [x] **F1-1 · Entidades Domain**
   - Qué: modelo de dominio deportivo de `docs/04`.
   - Pasos: crear entidades `seasons, competitions, teams, players, fixtures, fixture_events, fixture_lineups, fixture_lineup_players, fixture_player_stats, player_season_stats, standings, sync_state`; enums (`FixtureStatus`, `PlayerPosition`, `EventType`, `CompetitionType`); campos `*_ext_id` + `created_at`/`updated_at`.
   - DoD: proyecto Domain compila.

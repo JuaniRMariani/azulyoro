@@ -75,8 +75,9 @@ public class FixtureLineupPlayer : Entity
 {
     public Guid LineupId { get; set; }
     public FixtureLineup? Lineup { get; set; }
+
+    /// <summary>Loose ref — may point at an opponent player we don't ingest.</summary>
     public Guid PlayerId { get; set; }
-    public Player? Player { get; set; }
 
     public bool IsStarter { get; set; }
     public string? Grid { get; set; }
@@ -87,8 +88,9 @@ public class FixturePlayerStats : Entity
 {
     public Guid FixtureId { get; set; }
     public Fixture? Fixture { get; set; }
+
+    /// <summary>Loose refs — lineups/stats can include opponent players/teams.</summary>
     public Guid PlayerId { get; set; }
-    public Player? Player { get; set; }
     public Guid TeamId { get; set; }
 
     public int? Minutes { get; set; }
