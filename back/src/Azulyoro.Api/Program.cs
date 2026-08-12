@@ -1,9 +1,12 @@
 using Azulyoro.Api.Configuration;
+using Azulyoro.Api.Features.Admin;
+using Azulyoro.Api.Features.Articles;
 using Azulyoro.Api.Features.Competitions;
 using Azulyoro.Api.Features.Matches;
 using Azulyoro.Api.Features.Players;
 using Azulyoro.Api.Features.Standings;
 using Azulyoro.Infrastructure;
+using Azulyoro.Infrastructure.Content;
 using Azulyoro.Infrastructure.Persistence;
 using Hangfire;
 
@@ -29,6 +32,7 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await DevDataSeeder.SeedAsync(db, CancellationToken.None);
+    await ContentSeeder.SeedSourcesAsync(db, CancellationToken.None);
 }
 
 app.UseHttpsRedirection();
@@ -40,6 +44,8 @@ app.MapMatchesEndpoints();
 app.MapPlayersEndpoints();
 app.MapStandingsEndpoints();
 app.MapCompetitionsEndpoints();
+app.MapArticlesEndpoints();
+app.MapContentAdminEndpoints();
 
 app.UseAppHangfire();
 
