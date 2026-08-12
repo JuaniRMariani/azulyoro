@@ -185,16 +185,16 @@ rollback() {
     local rollback_link="$app_root/.rollback-$$"
     ln -s "$previous" "$rollback_link"
     mv -Tf "$rollback_link" "$current"
-    systemctl restart --wait azulyoro-api.service || true
-    systemctl restart --wait azulyoro-web.service || true
+    systemctl restart azulyoro-api.service || true
+    systemctl restart azulyoro-web.service || true
 }
 
 log "starting API and web release"
-if ! systemctl restart --wait azulyoro-api.service; then
+if ! systemctl restart azulyoro-api.service; then
     rollback
     die "API failed to start; previous release restored"
 fi
-if ! systemctl restart --wait azulyoro-web.service; then
+if ! systemctl restart azulyoro-web.service; then
     rollback
     die "web failed to start; previous release restored"
 fi
