@@ -189,6 +189,19 @@ rollback() {
     systemctl restart azulyoro-web.service || true
 }
 
+wait_http() {
+    local url="$1" host="${2:-}" attempt
+    for attempt in {1..60}; do
+        if [[ -n "$host" ]]; then
+            curl --fail --silent --max-time 2 -H "Host: $host" "$url" >/dev/null && return 0
+        else
+            curl --fail --silent --max-time 2 "$url" >/dev/null && return 0
+        fi
+        sleep 1
+    done
+    return 1
+}
+
 log "starting API and web release"
 if ! systemctl restart azulyoro-api.service; then
     rollback
@@ -199,13 +212,13 @@ if ! systemctl restart azulyoro-web.service; then
     die "web failed to start; previous release restored"
 fi
 
-curl --fail --silent --show-error --max-time 10 -H 'Host: api.azulyoro.com.ar' http://127.0.0.1:5000/health >/dev/null || {
+if ! wait_http http://127.0.0.1:5000/health api.azulyoro.com.ar; then
     rollback
     die "API health check failed; previous release restored"
-}
-curl --fail --silent --show-error --max-time 10 http://127.0.0.1:3102/ >/dev/null || {
+fi
+if ! wait_http http://127.0.0.1:3102/; then
     rollback
     die "web health check failed; previous release restored"
-}
+fi
 
 log "deployed $target_sha successfully"
