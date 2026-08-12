@@ -46,7 +46,7 @@
   - DoD: `dotnet ef database update` aplica sin error (schema vacío/base creado).
   - Deps: F0-4
 
-- [ ] **F0-6 · Scaffold front Next 16 + next-intl + Tailwind v4**
+- [x] **F0-6 · Scaffold front Next 16 + next-intl + Tailwind v4**
   - Qué: app Next con TS, App Router, Tailwind v4.
   - Pasos: `pnpm create next-app@latest . --ts --app --tailwind --eslint --src-dir=false --import-alias "@/*"`; `pnpm add next-intl`; `next.config.ts` con `output: 'standalone'`.
   - DoD: `pnpm build` verde.

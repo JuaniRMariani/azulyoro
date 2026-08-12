@@ -1,0 +1,24 @@
+{
+  "Home": {
+    "title": "Azul y Oro",
+    "tagline": "El hogar de los hinchas de Boca. Sitio no oficial."
+  },
+  "Nav": {
+    "home": "Inicio",
+    "matches": "Partidos",
+    "squad": "Plantel",
+    "standings": "Posiciones",
+    "news": "Noticias",
+    "transfers": "Fichajes",
+    "live": "En vivo",
+    "login": "Ingresar"
+  },
+  "Footer": {
+    "disclaimer": "Sitio no oficial. No afiliado, patrocinado ni avalado por el Club Atlético Boca Juniors ni sus entidades relacionadas. Todas las marcas pertenecen a sus respectivos titulares.",
+    "dataAttribution": "Datos deportivos por API-Football.",
+    "terms": "Términos",
+    "privacy": "Privacidad",
+    "legalNotice": "Aviso legal",
+    "cookies": "Cookies"
+  }
+}
