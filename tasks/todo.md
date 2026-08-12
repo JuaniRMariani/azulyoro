@@ -34,7 +34,7 @@
   - DoD: `dotnet build` verde · estructura de `docs/07` creada.
   - Deps: F0-2
 
-- [ ] **F0-4 · Paquetes NuGet clave**
+- [x] **F0-4 · Paquetes NuGet clave**
   - Qué: instalar dependencias del stack.
   - Pasos: Infra → `Npgsql.EntityFrameworkCore.PostgreSQL`, `AngleSharp`, `Polly`/`Microsoft.Extensions.Http.Resilience`, `HtmlSanitizer`; Api → `Microsoft.AspNetCore.Identity.EntityFrameworkCore`, `Hangfire.AspNetCore`, `Hangfire.PostgreSql`, `ErrorOr`.
   - DoD: `dotnet restore` + `dotnet build` verdes.
