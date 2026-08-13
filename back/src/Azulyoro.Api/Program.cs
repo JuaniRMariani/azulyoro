@@ -19,6 +19,8 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddMemoryCache();
+
 var dataProtection = builder.Services
     .AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(

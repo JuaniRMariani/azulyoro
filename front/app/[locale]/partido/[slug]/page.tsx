@@ -12,8 +12,7 @@ import {
 import { matchSlug } from "@/lib/slug";
 import { classifyStatus } from "@/lib/matchStatus";
 import { siteUrl } from "@/lib/site";
-import { LiveRefresher } from "@/components/sports/LiveRefresher";
-import { LiveScoreBadge } from "@/components/sports/LiveScoreBadge";
+import { LiveMatchStream } from "@/components/sports/LiveMatchStream";
 import { Breadcrumbs } from "@/components/sports/Breadcrumbs";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { MatchDto } from "@/lib/api/types";
@@ -130,8 +129,6 @@ export default async function MatchDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      {state === "live" && <LiveRefresher />}
-
       <Breadcrumbs
         items={[
           { label: tc("home"), href: "/" },
@@ -140,17 +137,28 @@ export default async function MatchDetailPage({
         ]}
       />
 
+      {state === "live" || state === "scheduled" ? (
+        <LiveMatchStream
+          match={match}
+          detail={detail}
+          events={events}
+          labels={{
+            live: t("live"),
+            statusScheduled: t("statusScheduled"),
+            statusFinished: t("statusFinished"),
+            events: t("events"),
+            eventsEmpty: t("eventsEmpty"),
+            notStartedTitle: t("notStartedTitle"),
+            notStartedDescription: t("notStartedDescription"),
+          }}
+        />
+      ) : (
+        <>
       {/* Scoreboard */}
       <section className="overflow-hidden rounded-2xl border border-[var(--border)] bg-gradient-to-b from-[var(--azul-900)] to-[var(--card)] p-6 text-[var(--foreground)] shadow-lg">
         <div className="mb-6 flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wide">
           <span className="text-[var(--oro-500)]">{match.competitionName}</span>
-          {state === "live" ? (
-            <LiveScoreBadge label={t("live")} minute={detail?.elapsed ?? undefined} />
-          ) : (
-            <span className="text-[var(--muted-foreground)]">
-              {state === "finished" ? t("statusFinished") : t("statusScheduled")}
-            </span>
-          )}
+          <span className="text-[var(--muted-foreground)]">{t("statusFinished")}</span>
         </div>
 
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
@@ -187,16 +195,8 @@ export default async function MatchDetailPage({
         </p>
       </section>
 
-      {/* Scheduled match: no events/stats yet */}
-      {!played && (
-        <EmptyState
-          title={t("notStartedTitle")}
-          description={t("notStartedDescription")}
-        />
-      )}
-
       {/* Events */}
-      {played && (
+      {state === "finished" && played && (
         <section>
           <h2 className="mb-3 font-display text-lg font-semibold">{t("events")}</h2>
           {events.length > 0 ? (
@@ -284,6 +284,8 @@ export default async function MatchDetailPage({
             </table>
           </div>
         </section>
+      )}
+        </>
       )}
     </main>
   );

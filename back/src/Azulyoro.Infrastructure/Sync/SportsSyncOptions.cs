@@ -15,4 +15,13 @@ public sealed class SportsSyncOptions
 
     /// <summary>Maximum player pages allowed by the current provider plan.</summary>
     public int MaxPlayerPages { get; set; } = 3;
+
+    /// <summary>Seconds between the single live-provider polls.</summary>
+    public int LivePollIntervalSeconds { get; set; } = 30;
+
+    /// <summary>How far ahead to poll scheduled Boca fixtures for kickoff changes.</summary>
+    public int LiveLookaheadHours { get; set; } = 30;
+
+    /// <summary>How long after kickoff a fixture remains eligible for live polling.</summary>
+    public int LiveLookbehindHours { get; set; } = 4;
 }

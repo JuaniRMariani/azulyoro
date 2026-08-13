@@ -1,23 +1,25 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Azulyoro.Infrastructure.Sync;
 
 /// <summary>
-/// Coarse 60s heartbeat that polls only while a Boca match is live. Actual
-/// per-fixture polling cadence and FT cut-off live in <see cref="LiveSyncService"/>.
+/// Single-provider heartbeat that watches today's fixtures for kickoff,
+/// in-play changes and the final result. Connected clients consume the
+/// resulting fan-out rather than polling the provider themselves.
 /// </summary>
 public class LiveSyncBackgroundService(
     IServiceScopeFactory scopeFactory,
-    ILogger<LiveSyncBackgroundService> logger)
+    ILogger<LiveSyncBackgroundService> logger,
+    IOptions<SportsSyncOptions> options)
     : BackgroundService
 {
-    private static readonly TimeSpan WakeInterval = TimeSpan.FromSeconds(60);
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var timer = new PeriodicTimer(WakeInterval);
+        var intervalSeconds = Math.Clamp(options.Value.LivePollIntervalSeconds, 15, 300);
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(intervalSeconds));
         do
         {
             try

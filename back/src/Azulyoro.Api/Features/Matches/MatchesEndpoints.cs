@@ -1,8 +1,12 @@
+using System.Text;
+using System.Text.Json;
 using Azulyoro.Api.Common;
 using Azulyoro.Domain.Enums;
 using Azulyoro.Infrastructure.Persistence;
+using Azulyoro.Infrastructure.Sync;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.EntityFrameworkCore;
 
 namespace Azulyoro.Api.Features.Matches;
@@ -16,6 +20,7 @@ public static class MatchesEndpoints
         group.MapGet("/", GetMatches);
         group.MapGet("/next", GetNext);
         group.MapGet("/live", GetLive);
+        group.MapGet("/{id:guid}/stream", StreamLive);
         group.MapGet("/{id:guid}", GetById);
         group.MapGet("/{id:guid}/events", GetEvents);
         group.MapGet("/{id:guid}/lineups", GetLineups);
@@ -132,30 +137,166 @@ public static class MatchesEndpoints
             : Results.Ok(match);
     }
 
-    private static async Task<IResult> GetLive(HttpContext http, AppDbContext db, CancellationToken ct)
+    private static async Task<IResult> GetLive(
+        HttpContext http,
+        AppDbContext db,
+        IMemoryCache cache,
+        CancellationToken ct)
     {
-        var items = await db.Fixtures.AsNoTracking()
-            .Where(f => f.IsBoca && (
-                f.Status == FixtureStatus.FirstHalf ||
-                f.Status == FixtureStatus.HalfTime ||
-                f.Status == FixtureStatus.SecondHalf ||
-                f.Status == FixtureStatus.ExtraTime ||
-                f.Status == FixtureStatus.BreakTime ||
-                f.Status == FixtureStatus.Penalty))
-            .OrderByDescending(f => f.DateUtc)
-            .Select(f => new MatchDto(
-                f.Id, f.ExtId, f.DateUtc, f.Status.ToString(),
-                f.CompetitionId, f.Competition!.Name,
-                f.HomeTeamId, f.HomeTeam!.Name, f.HomeTeam.LogoUrl,
-                f.AwayTeamId, f.AwayTeam!.Name, f.AwayTeam.LogoUrl,
-                f.HomeGoals, f.AwayGoals, f.IsBoca))
-            .ToListAsync(ct);
+        var items = await cache.GetOrCreateAsync("matches:live", async entry =>
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(2);
+            return await db.Fixtures.AsNoTracking()
+                .Where(f => f.IsBoca && (
+                    f.Status == FixtureStatus.FirstHalf ||
+                    f.Status == FixtureStatus.HalfTime ||
+                    f.Status == FixtureStatus.SecondHalf ||
+                    f.Status == FixtureStatus.ExtraTime ||
+                    f.Status == FixtureStatus.BreakTime ||
+                    f.Status == FixtureStatus.Penalty))
+                .OrderByDescending(f => f.DateUtc)
+                .Select(f => new MatchDto(
+                    f.Id, f.ExtId, f.DateUtc, f.Status.ToString(),
+                    f.CompetitionId, f.Competition!.Name,
+                    f.HomeTeamId, f.HomeTeam!.Name, f.HomeTeam.LogoUrl,
+                    f.AwayTeamId, f.AwayTeam!.Name, f.AwayTeam.LogoUrl,
+                    f.HomeGoals, f.AwayGoals, f.IsBoca))
+                .ToListAsync(ct);
+        }) ?? [];
 
-        CacheControl.SetNoStore(http);
+        CacheControl.SetPublicMaxAge(http, 2);
         return items.Count == 0
             ? Results.NoContent()
             : Results.Ok(items);
     }
+
+    private static readonly JsonSerializerOptions SseJsonOptions = new(JsonSerializerDefaults.Web);
+
+    private static async Task StreamLive(
+        HttpContext http,
+        AppDbContext db,
+        LiveUpdateHub hub,
+        Guid id,
+        CancellationToken ct)
+    {
+        await using var subscription = hub.Subscribe(id);
+        var initial = await ReadLiveUpdateAsync(db, id, ct);
+        if (initial is null)
+        {
+            http.Response.StatusCode = StatusCodes.Status404NotFound;
+            return;
+        }
+
+        http.Response.StatusCode = StatusCodes.Status200OK;
+        http.Response.ContentType = "text/event-stream";
+        http.Response.Headers.CacheControl = "no-cache, no-transform";
+        http.Response.Headers["X-Accel-Buffering"] = "no";
+        http.Response.Headers.Connection = "keep-alive";
+        await http.Response.StartAsync(ct);
+
+        await using var writer = new StreamWriter(
+            http.Response.Body,
+            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+            bufferSize: 1024,
+            leaveOpen: true)
+        {
+            NewLine = "\n",
+        };
+
+        await writer.WriteAsync("retry: 5000\n\n");
+        await WriteSseAsync(writer, initial, ct);
+        if (IsFinished(initial.Status))
+        {
+            return;
+        }
+
+        await using var updates = subscription.ReadAllAsync(ct).GetAsyncEnumerator(ct);
+        while (!ct.IsCancellationRequested)
+        {
+            var nextUpdate = updates.MoveNextAsync().AsTask();
+            var heartbeat = Task.Delay(TimeSpan.FromSeconds(15), ct);
+            var completed = await Task.WhenAny(nextUpdate, heartbeat);
+
+            if (completed == heartbeat)
+            {
+                await writer.WriteAsync(": keep-alive\n\n");
+                await writer.FlushAsync(ct);
+                continue;
+            }
+
+            if (!await nextUpdate)
+            {
+                break;
+            }
+
+            await WriteSseAsync(writer, updates.Current, ct);
+            if (IsFinished(updates.Current.Status))
+            {
+                break;
+            }
+        }
+    }
+
+    private static async Task<LiveFixtureUpdate?> ReadLiveUpdateAsync(
+        AppDbContext db,
+        Guid id,
+        CancellationToken ct)
+    {
+        var fixture = await db.Fixtures.AsNoTracking()
+            .Where(f => f.Id == id && f.IsBoca)
+            .Select(f => new LiveFixtureUpdate(
+                f.Id,
+                f.Status.ToString(),
+                f.Elapsed,
+                f.HomeGoals,
+                f.AwayGoals,
+                Array.Empty<LiveEventUpdate>()))
+            .FirstOrDefaultAsync(ct);
+
+        if (fixture is null)
+        {
+            return null;
+        }
+
+        var events = await db.FixtureEvents.AsNoTracking()
+            .Where(e => e.FixtureId == id)
+            .OrderBy(e => e.ExtSeq)
+            .Select(e => new LiveEventUpdate(
+                e.Minute,
+                e.ExtraMinute,
+                e.Type.ToString(),
+                e.Detail,
+                db.Teams.Where(t => t.Id == e.TeamId).Select(t => t.Name).FirstOrDefault(),
+                db.Players.Where(p => p.Id == e.PlayerId).Select(p => p.Name).FirstOrDefault(),
+                db.Players.Where(p => p.Id == e.AssistPlayerId).Select(p => p.Name).FirstOrDefault()))
+            .ToListAsync(ct);
+
+        return fixture with { Events = events };
+    }
+
+    private static Task WriteSseAsync(
+        StreamWriter writer,
+        LiveFixtureUpdate update,
+        CancellationToken ct)
+    {
+        var json = JsonSerializer.Serialize(update, SseJsonOptions);
+        return WriteSseCoreAsync(writer, json, ct);
+    }
+
+    private static async Task WriteSseCoreAsync(
+        StreamWriter writer,
+        string json,
+        CancellationToken ct)
+    {
+        await writer.WriteAsync("data: ");
+        await writer.WriteLineAsync(json);
+        await writer.WriteLineAsync();
+        await writer.FlushAsync(ct);
+    }
+
+    private static bool IsFinished(string status) =>
+        Enum.TryParse<FixtureStatus>(status, ignoreCase: true, out var parsed) &&
+        parsed.IsFinished();
 
     private static async Task<IResult> GetById(HttpContext http, AppDbContext db, Guid id, CancellationToken ct)
     {

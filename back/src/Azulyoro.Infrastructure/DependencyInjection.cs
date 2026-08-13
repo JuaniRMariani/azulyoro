@@ -30,6 +30,7 @@ public static class DependencyInjection
                 .UseSnakeCaseNamingConvention());
 
         services.AddScoped<LiveSyncService>();
+        services.AddSingleton<LiveUpdateHub>();
         services.Configure<SportsSyncOptions>(
             configuration.GetSection(SportsSyncOptions.SectionName));
         services.AddScoped<ISportsSyncService, SportsSyncService>();

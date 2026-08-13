@@ -4,6 +4,7 @@ using Azulyoro.Infrastructure.ApiFootball;
 using Azulyoro.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Azulyoro.Infrastructure.Sync;
 
@@ -15,23 +16,38 @@ namespace Azulyoro.Infrastructure.Sync;
 public class LiveSyncService(
     AppDbContext db,
     IApiFootballClient api,
-    ILogger<LiveSyncService> logger)
+    ILogger<LiveSyncService> logger,
+    IOptions<SportsSyncOptions>? options = null,
+    LiveUpdateHub? updates = null)
 {
-    /// <summary>Poll every Boca fixture currently live; returns how many were polled.</summary>
+    private readonly LiveUpdateHub updates = updates ?? new();
+
+    /// <summary>
+    /// Poll today's and near-future Boca fixtures so a scheduled match can be
+    /// observed changing to live without waiting for the 45-minute full sync.
+    /// </summary>
     public async Task<int> PollOnceAsync(CancellationToken ct)
     {
+        var syncOptions = options?.Value ?? new SportsSyncOptions();
+        var now = DateTime.UtcNow;
         var live = await db.Fixtures.AsNoTracking()
-            .Where(f => f.IsBoca)
-            .Select(f => new { f.Id, f.ExtId, f.Status })
+            .Where(f => f.IsBoca &&
+                f.DateUtc >= now.AddHours(-syncOptions.LiveLookbehindHours) &&
+                f.DateUtc <= now.AddHours(syncOptions.LiveLookaheadHours) &&
+                f.Status != FixtureStatus.Finished &&
+                f.Status != FixtureStatus.Cancelled &&
+                f.Status != FixtureStatus.Abandoned &&
+                f.Status != FixtureStatus.Awarded &&
+                f.Status != FixtureStatus.WalkOver)
+            .Select(f => new { f.Id, f.ExtId })
             .ToListAsync(ct);
 
-        var targets = live.Where(f => f.Status.IsLive()).ToList();
-        foreach (var fixture in targets)
+        foreach (var fixture in live)
         {
             await SyncFixtureAsync(fixture.Id, fixture.ExtId, ct);
         }
 
-        return targets.Count;
+        return live.Count;
     }
 
     /// <summary>
@@ -84,6 +100,14 @@ public class LiveSyncService(
 
         await db.SaveChangesAsync(ct);
 
+        updates.Publish(new LiveFixtureUpdate(
+            fixture.Id,
+            fixture.Status.ToString(),
+            fixture.Elapsed,
+            fixture.HomeGoals,
+            fixture.AwayGoals,
+            item.Events.Select(MapEvent).ToArray()));
+
         var finished = fixture.Status.IsFinished();
         if (finished)
         {
@@ -91,6 +115,15 @@ public class LiveSyncService(
         }
         return finished;
     }
+
+    private static LiveEventUpdate MapEvent(ApiFixtureEvent source) => new(
+        source.Time.Elapsed,
+        source.Time.Extra,
+        source.Type ?? "Other",
+        source.Detail,
+        source.Team.Name,
+        source.Player.Name,
+        source.Assist.Name);
 
     private static EventType MapEventType(string? apiType) => apiType?.ToLowerInvariant() switch
     {
