@@ -210,7 +210,9 @@ public static class MatchesEndpoints
             return;
         }
 
-        await using var updates = subscription.ReadAllAsync(ct).GetAsyncEnumerator(ct);
+        // ChannelReader's ReadAllAsync enumerator does not implement disposal;
+        // the subscription itself completes and removes the channel below.
+        var updates = subscription.ReadAllAsync(ct).GetAsyncEnumerator(ct);
         while (!ct.IsCancellationRequested)
         {
             var nextUpdate = updates.MoveNextAsync().AsTask();
